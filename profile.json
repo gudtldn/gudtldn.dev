@@ -1,0 +1,56 @@
+{
+  "$schema": "./profile-schema.json",
+  "name": "Siwoo",
+  "domain": "gudtldn.dev",
+  "status": [
+    "Student",
+    "Developer"
+  ],
+  "location": "Gyeonggi-do, South Korea",
+  "blogUrl": "https://blog.gudtldn.dev",
+  "bio": "안녕하세요, 형시우입니다. C++, 그래픽스 프로그래밍에 대해서 공부하고 있습니다. 시스템의 저수준 동작 원리를 탐구하고, 배운 것을 기록으로 남기는 것을 좋아합니다.",
+  "socials": [
+    {
+      "platform": "GitHub",
+      "url": "https://github.com/gudtldn",
+      "id": "gudtldn"
+    },
+    {
+      "platform": "Email",
+      "url": "mailto:me@gudtldn.dev",
+      "id": "me@gudtldn.dev"
+    },
+    {
+      "platform": "Discord",
+      "url": "#",
+      "id": "ordinary_human"
+    }
+  ],
+  "customLinks": [],
+  "currentlyFocusing": [
+    { "category": "Architecture", "item": "x86 Assembly" },
+    { "category": "Systems", "item": "Modern C++" },
+    { "category": "Modern Tech", "item": "Rust" },
+    { "category": "Graphics", "item": "DirectX / UE" },
+    { "category": "Automation", "item": "Python" }
+  ],
+  "techStack": {
+    "languages": [
+      { "name": "C++", "color": "00599C", "logo": "cplusplus" },
+      { "name": "Rust", "color": "000000", "logo": "rust" },
+      { "name": "Python", "color": "3776AB", "logo": "python" }
+    ],
+    "tools": [
+      { "name": "Unreal Engine", "color": "0E1128", "logo": "unrealengine" },
+      { "name": "Blender", "color": "F5792A", "logo": "blender" },
+      { "name": "Docker", "color": "2496ED", "logo": "docker" },
+      { "name": "Git", "color": "F05032", "logo": "git" },
+      { "name": "VScode", "color": "007ACC", "logo": "visualstudiocode" }
+    ]
+  },
+  "infrastructure": [],
+  "github": {
+    "username": "gudtldn",
+    "themeColor": "3b82f6"
+  }
+}

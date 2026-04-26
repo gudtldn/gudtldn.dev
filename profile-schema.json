@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Developer Profile Schema",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "domain": { "type": "string" },
+    "status": {
+      "anyOf": [
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      ]
+    },
+    "location": { "type": "string" },
+    "blogUrl": { "type": "string" },
+    "bio": { "type": "string" },
+    "socials": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "platform": { "type": "string" },
+          "url": { "type": "string" },
+          "id": { "type": "string" }
+        }
+      }
+    },
+    "customLinks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "url": { "type": "string" }
+        }
+      }
+    },
+    "currentlyFocusing": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": { "type": "string" },
+          "item": { "type": "string" }
+        }
+      }
+    },
+    "techStack": {
+      "type": "object",
+      "properties": {
+        "languages": { "type": "array", "items": { "$ref": "#/definitions/badge" } },
+        "tools": { "type": "array", "items": { "$ref": "#/definitions/badge" } }
+      }
+    },
+    "infrastructure": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "url": { "type": "string" },
+          "theme": { "enum": ["orange", "emerald", "blue", "purple", "rose", "slate", "red", "green"] }
+        }
+      }
+    },
+    "github": {
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "themeColor": { "type": "string" }
+      }
+    }
+  },
+  "definitions": {
+    "badge": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "color": { "type": "string" },
+        "logo": { "type": "string" }
+      }
+    }
+  }
+}

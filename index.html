@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Siwoo | gudtldn.dev</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass { 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+        @media (prefers-color-scheme: light) { 
+            .glass { 
+                background: rgba(0, 0, 0, 0.02); 
+                border: 1px solid rgba(0, 0, 0, 0.05); 
+            } 
+        }
+        [x-cloak] { display: none !important; }
+        
+        .touch-active:active {
+            transform: scale(0.98);
+            opacity: 0.8;
+        }
+        
+        /* 스크롤바 숨기기 */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+
+    <script>
+        // Alpine.js가 로드되기 전에 컴포넌트를 미리 정의
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('profileApp', () => ({
+                data: {
+                    name: "",
+                    domain: "",
+                    status: [],
+                    location: "",
+                    blogUrl: "",
+                    bio: "",
+                    socials: [],
+                    customLinks: [],
+                    currentlyFocusing: [],
+                    techStack: { languages: [], tools: [] },
+                    infrastructure: [],
+                    github: { username: "", themeColor: "3b82f6" }
+                },
+                loaded: false,
+                error: false,
+                copied: false,
+                currentTime: "",
+                async init() {
+                    this.initTime();
+                    try {
+                        const response = await fetch('./profile.json');
+                        if (response.ok) {
+                            this.data = await response.json();
+                        } else {
+                            throw new Error("profile.json 로드 실패");
+                        }
+                    } catch (e) {
+                        console.error("데이터를 불러오는 중 문제가 발생했습니다:", e);
+                        this.error = true;
+                    } finally {
+                        this.loaded = true;
+                    }
+                },
+                copyDiscord(id) {
+                    if (!id) return;
+                    const el = document.createElement('textarea');
+                    el.value = id;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 2000);
+                },
+                initTime() {
+                    const update = () => {
+                        const now = new Date();
+                        const timeString = new Intl.DateTimeFormat('en-US', {
+                            timeZone: 'Asia/Seoul',
+                            hour12: false,
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        }).format(now);
+                        this.currentTime = `${timeString} KST`;
+                    };
+                    update();
+                    setInterval(update, 1000);
+                }
+            }));
+        });
+    </script>
+    <!-- Alpine.js 라이브러리는 모든 준비가 끝난 후 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body x-data="profileApp" class="bg-white text-slate-900 dark:bg-[#0d1117] dark:text-slate-200 min-h-screen transition-colors duration-300" x-cloak>
+
+    <!-- 에러 발생 시 보여줄 화면 -->
+    <div class="max-w-4xl mx-auto px-5 py-32 text-center" x-show="error && loaded" x-cloak>
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-500 mb-6 dark:bg-red-900/30">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Something went wrong</h2>
+        <p class="text-slate-500 dark:text-slate-400">profile.json 파일을 불러올 수 없습니다.<br>데이터 파일이 경로에 존재하는지 확인해 주세요.</p>
+    </div>
+
+    <!-- 정상 데이터 로드 시 보여줄 화면 -->
+    <div class="max-w-4xl mx-auto px-5 py-12 md:py-24" x-show="!error && loaded" x-transition.opacity.duration.500ms>
+        <!-- Header -->
+        <header class="mb-12 md:mb-16">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white" x-text="data.name"></h1>
+                
+                <div class="flex flex-col items-start md:items-end gap-2 mt-2 md:mt-0">
+                    <div class="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <!-- Location 정보 -->
+                        <template x-if="data.location">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span x-text="data.location"></span>
+                                <span class="mx-1 opacity-50">•</span>
+                            </div>
+                        </template>
+                        <!-- 현재 시간 정보 -->
+                        <div class="flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span x-text="currentTime" class="font-mono tracking-tighter"></span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- 배열이면 각 뱃지를 렌더링하고, 아니면 단일 문자열로 호환 처리 -->
+                        <template x-for="badge in (Array.isArray(data.status) ? data.status : [data.status].filter(Boolean))" :key="badge">
+                            <span class="px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider rounded-md bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" x-text="badge"></span>
+                        </template>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-8 max-w-2xl" x-html="data.bio"></p>
+            
+            <div class="flex flex-wrap items-center gap-y-4 gap-x-6 pt-2">
+                <template x-for="social in data.socials" :key="social.platform">
+                    <div class="flex items-center">
+                        <template x-if="social.platform !== 'Discord'">
+                            <a :href="social.url" target="_blank" class="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-slate-200 hover:text-blue-500 transition-colors py-1">
+                                <template x-if="social.platform === 'GitHub'">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                                </template>
+                                <template x-if="social.platform === 'Email'">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                </template>
+                                <template x-if="social.platform !== 'GitHub' && social.platform !== 'Email'">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                                </template>
+                                <span x-text="social.platform"></span>
+                            </a>
+                        </template>
+                        <template x-if="social.platform === 'Discord'">
+                            <div class="relative cursor-pointer flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-slate-200 hover:text-blue-500 transition-colors py-1" @click="copyDiscord(social.id)">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.069.069 0 0 0-.032.027C.533 9.048-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                                <span class="text-slate-500 dark:text-slate-400" x-text="social.id"></span>
+                                <span x-show="copied" x-transition class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-xl z-50">Copied!</span>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Blog 링크 뱃지 -->
+                <template x-if="data.blogUrl">
+                    <a :href="data.blogUrl" target="_blank" class="flex items-center gap-1.5 text-sm font-medium text-slate-900 dark:text-slate-200 hover:text-blue-500 transition-colors py-1 pl-4 border-l border-slate-200 dark:border-slate-800">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M7 7h10v10"></path></svg>
+                        <span>Blog</span>
+                    </a>
+                </template>
+            </div>
+        </header>
+
+        <main class="space-y-12 md:space-y-20">
+            <!-- Currently Focusing -->
+            <section x-show="data.currentlyFocusing && data.currentlyFocusing.length > 0">
+                <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
+                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+                    Currently Focusing
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <template x-for="focus in data.currentlyFocusing" :key="focus.item">
+                        <div class="glass p-4 rounded-2xl border-l-4 border-blue-500/30">
+                            <span class="block text-[10px] text-slate-500 mb-1 font-medium uppercase tracking-wider" x-text="focus.category"></span>
+                            <span class="font-medium text-sm" x-text="focus.item"></span>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <!-- Discovery & Links -->
+            <template x-if="data.customLinks && data.customLinks.length > 0">
+                <section>
+                    <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6">Discovery & Links</h2>
+                    <div class="grid grid-cols-1 gap-3">
+                        <template x-for="link in data.customLinks" :key="link.title">
+                            <a :href="link.url" target="_blank" class="group flex items-center justify-between p-5 glass rounded-2xl touch-active transition-all hover:bg-slate-50 dark:hover:bg-white/5">
+                                <div class="flex-1">
+                                    <span class="block font-medium text-base mb-1 group-hover:text-blue-500 transition-colors" x-text="link.title"></span>
+                                    <span class="text-xs text-slate-500 line-clamp-1" x-text="link.description"></span>
+                                </div>
+                                <div class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/5 text-slate-400 group-hover:text-blue-500 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </div>
+                            </a>
+                        </template>
+                    </div>
+                </section>
+            </template>
+
+            <!-- Tech Stack -->
+            <section x-show="data.techStack && (data.techStack.languages.length > 0 || data.techStack.tools.length > 0)">
+                <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6">Tech Stack</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="space-y-6" x-show="data.techStack.languages.length > 0">
+                        <h3 class="text-[11px] font-semibold text-slate-400 mb-3 uppercase flex items-center gap-2">
+                            <span class="w-1 h-3 bg-slate-300 dark:bg-slate-700 rounded-full"></span>
+                            Languages
+                        </h3>
+                        <div class="flex flex-wrap gap-2.5">
+                            <template x-for="lang in data.techStack.languages" :key="lang.name">
+                                <img :src="`https://img.shields.io/badge/${lang.name}-${lang.color}?style=flat-square&logo=${lang.logo}&logoColor=white`" class="h-6 rounded shadow-sm">
+                            </template>
+                        </div>
+                    </div>
+                    <div class="space-y-6" x-show="data.techStack.tools.length > 0">
+                        <h3 class="text-[11px] font-semibold text-slate-400 mb-3 uppercase flex items-center gap-2">
+                            <span class="w-1 h-3 bg-slate-300 dark:bg-slate-700 rounded-full"></span>
+                            Tools & Engines
+                        </h3>
+                        <div class="flex flex-wrap gap-2.5">
+                            <template x-for="tool in data.techStack.tools" :key="tool.name">
+                                <img :src="`https://img.shields.io/badge/${tool.name.replace(/ /g, '%20')}-${tool.color}?style=flat-square&logo=${tool.logo}&logoColor=white`" class="h-6 rounded shadow-sm">
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Infrastructure -->
+            <section x-show="data.infrastructure && data.infrastructure.length > 0">
+                <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6">Infrastructure</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <template x-for="infra in data.infrastructure" :key="infra.name">
+                        <a :href="infra.url" target="_blank" class="group flex items-center justify-between p-5 glass rounded-2xl touch-active transition-all hover:bg-slate-50 dark:hover:bg-white/5">
+                            <div class="flex items-center gap-4">
+                                <div :class="`w-12 h-12 rounded-xl flex items-center justify-center bg-${infra.theme}-500/10 text-${infra.theme}-500`">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                                </div>
+                                <div>
+                                    <span class="block font-medium text-base" x-text="infra.name"></span>
+                                    <span class="text-xs text-slate-500" x-text="infra.description"></span>
+                                </div>
+                            </div>
+                            <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    </template>
+                </div>
+            </section>
+
+            <!-- Activity & Stats -->
+            <section x-show="data.github.username" class="pt-12 border-t border-slate-100 dark:border-slate-800">
+                <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-10 text-center">Activity & Performance</h2>
+                
+                <div class="flex flex-col gap-10">
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                        <div class="w-full md:w-auto flex justify-center">
+                            <img :src="`https://github-readme-stats-gudtldn.vercel.app/api?username=${data.github.username}&bg_color=00000000&hide_border=true&show_icons=true&include_all_commits=true&count_private=true&text_color=7e8c9a&icon_color=${data.github.themeColor}&title_color=ffffff&card_width=380`" class="max-w-full">
+                        </div>
+                        <div class="w-full md:w-auto flex justify-center">
+                            <img :src="`https://github-readme-stats-gudtldn.vercel.app/api/top-langs?username=${data.github.username}&bg_color=00000000&hide_border=true&langs_count=6&exclude_repo=${data.github.username}.github.io,github-readme-stats&layout=compact&text_color=7e8c9a&icon_color=${data.github.themeColor}&title_color=ffffff&card_width=320`" class="max-w-full">
+                        </div>
+                    </div>
+
+                    <div class="w-full flex flex-col items-center gap-4">
+                        <h3 class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Commit Contribution</h3>
+                        <div class="w-full max-w-2xl overflow-x-auto pb-4 scrollbar-hide">
+                            <div class="min-w-[600px] md:min-w-0">
+                                <img :src="`https://ghchart.rshah.org/${data.github.themeColor}/gudtldn`" class="w-full opacity-90">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-24 pb-12 text-center">
+            <div class="inline-flex items-center gap-2 mb-6 px-4 py-2 glass rounded-2xl shadow-sm">
+                 <img :src="`https://komarev.com/ghpvc/?username=${data.github.username}&label=Page%20Views&color=blue&style=flat-square`" class="h-4">
+            </div>
+            <p class="text-[10px] text-slate-400 font-medium tracking-[0.2em] uppercase">
+                &copy; <span x-text="new Date().getFullYear()"></span> <span x-text="data.name"></span> • <span x-text="data.domain"></span>
+            </p>
+        </footer>
+    </div>
+
+</body>
+</html>
