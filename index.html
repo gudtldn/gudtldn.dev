@@ -297,24 +297,30 @@
                 <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6">Tech Stack</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div class="space-y-6" x-show="data.techStack.languages.length > 0">
-                        <h3 class="text-[11px] font-semibold text-slate-400 mb-3 uppercase flex items-center gap-2">
+                        <h3 class="text-[11px] font-semibold text-slate-400 mb-4 uppercase flex items-center gap-2">
                             <span class="w-1 h-3 bg-slate-300 dark:bg-slate-700 rounded-full"></span>
                             Languages
                         </h3>
-                        <div class="flex flex-wrap gap-2.5">
+                        <div class="flex flex-wrap gap-x-6 gap-y-6">
                             <template x-for="lang in data.techStack.languages" :key="lang.name">
-                                <img :src="`https://img.shields.io/badge/${lang.name}-${lang.color}?style=flat-square&logo=${lang.logo}&logoColor=white`" :alt="lang.name" class="h-6 rounded shadow-sm">
+                                <a :href="lang.url" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center gap-2 group cursor-pointer active:scale-90 transition-transform">
+                                    <img :src="`https://skillicons.dev/icons?i=${lang.logo}`" :alt="lang.name" class="h-10 w-10 md:h-12 md:w-12 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1">
+                                    <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors" x-text="lang.name"></span>
+                                </a>
                             </template>
                         </div>
                     </div>
                     <div class="space-y-6" x-show="data.techStack.tools.length > 0">
-                        <h3 class="text-[11px] font-semibold text-slate-400 mb-3 uppercase flex items-center gap-2">
+                        <h3 class="text-[11px] font-semibold text-slate-400 mb-4 uppercase flex items-center gap-2">
                             <span class="w-1 h-3 bg-slate-300 dark:bg-slate-700 rounded-full"></span>
                             Tools & Engines
                         </h3>
-                        <div class="flex flex-wrap gap-2.5">
+                        <div class="flex flex-wrap gap-x-6 gap-y-6">
                             <template x-for="tool in data.techStack.tools" :key="tool.name">
-                                <img :src="`https://img.shields.io/badge/${tool.name.replace(/ /g, '%20')}-${tool.color}?style=flat-square&logo=${tool.logo}&logoColor=white`" :alt="tool.name" class="h-6 rounded shadow-sm">
+                                <a :href="tool.url" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center gap-2 group cursor-pointer active:scale-90 transition-transform">
+                                    <img :src="`https://skillicons.dev/icons?i=${tool.logo}`" :alt="tool.name" class="h-10 w-10 md:h-12 md:w-12 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1">
+                                    <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors" x-text="tool.name"></span>
+                                </a>
                             </template>
                         </div>
                     </div>

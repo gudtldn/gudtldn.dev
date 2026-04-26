@@ -30,24 +30,26 @@
   ],
   "customLinks": [],
   "currentlyFocusing": [
-    { "category": "Architecture", "item": "x86 Assembly" },
-    { "category": "Systems", "item": "Modern C++" },
-    { "category": "Modern Tech", "item": "Rust" },
-    { "category": "Graphics", "item": "DirectX / UE" },
-    { "category": "Automation", "item": "Python" }
+    { "category": "Low-level", "item": "x86-64 Assembly" },
+    { "category": "Graphics", "item": "DirectX / SDL3GPU" },
+    { "category": "Game Engine", "item": "Unreal Engine 5" },
+    { "category": "Systems", "item": "Modern C++ / Rust" }
   ],
   "techStack": {
     "languages": [
-      { "name": "C++", "color": "00599C", "logo": "cplusplus" },
-      { "name": "Rust", "color": "000000", "logo": "rust" },
-      { "name": "Python", "color": "3776AB", "logo": "python" }
+      { "name": "C++", "logo": "cpp", "url": "https://en.cppreference.com/" },
+      { "name": "Rust", "logo": "rust", "url": "https://www.rust-lang.org/" },
+      { "name": "Python", "logo": "py", "url": "https://www.python.org/" },
+      { "name": "HLSL", "logo": "visualstudio", "url": "https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl" }
     ],
     "tools": [
-      { "name": "Unreal Engine", "color": "0E1128", "logo": "unrealengine" },
-      { "name": "Blender", "color": "F5792A", "logo": "blender" },
-      { "name": "Docker", "color": "2496ED", "logo": "docker" },
-      { "name": "Git", "color": "F05032", "logo": "git" },
-      { "name": "VScode", "color": "007ACC", "logo": "visualstudiocode" }
+      { "name": "Unreal Engine", "logo": "unreal", "url": "https://www.unrealengine.com/" },
+      { "name": "Rider", "logo": "rider", "url": "https://www.jetbrains.com/rider/" },
+      { "name": "CLion", "logo": "clion", "url": "https://www.jetbrains.com/clion/" },
+      { "name": "CMake", "logo": "cmake", "url": "https://cmake.org/" },
+      { "name": "Git", "logo": "git", "url": "https://git-scm.com/" },
+      { "name": "Docker", "logo": "docker", "url": "https://www.docker.com/" },
+      { "name": "VScode", "logo": "vscode", "url": "https://code.visualstudio.com/" }
     ]
   },
   "infrastructure": [],
