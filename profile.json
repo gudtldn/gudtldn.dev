@@ -1,6 +1,6 @@
 {
   "$schema": "./profile-schema.json",
-  "name": "Siwoo",
+  "name": "Siwoo Hyong",
   "domain": "gudtldn.dev",
   "status": [
     "Student",
@@ -10,7 +10,7 @@
   "timezone": "Asia/Seoul",
   "timezoneAbbr": "KST",
   "blogUrl": "https://blog.gudtldn.dev",
-  "bio": "안녕하세요, 형시우입니다. C++, 그래픽스 프로그래밍에 대해서 공부하고 있습니다. 시스템의 저수준 동작 원리를 탐구하고, 배운 것을 기록으로 남기는 것을 좋아합니다.",
+  "bio": "C++, 그래픽스 프로그래밍에 대해서 공부하고 있는 학생 개발자 입니다. 단순히 돌아가는 코드보다 그 이면의 원리와 아키텍처를 고민하고, 배운 것을 기록으로 남기는 것을 좋아합니다.",
   "socials": [
     {
       "platform": "GitHub",
