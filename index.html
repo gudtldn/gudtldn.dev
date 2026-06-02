@@ -72,6 +72,12 @@
                 error: false,
                 copied: false,
                 currentTime: "",
+                // START: GitHub Commits State
+                recentCommits: [],
+                commitsLoaded: false,
+                commitsError: false,
+                commitsVisible: [false, false, false],
+                // END: GitHub Commits State
                 async init() {
                     try {
                         const response = await fetch('./profile.json');
@@ -79,6 +85,7 @@
                             this.data = await response.json();
                             this.updateMeta();
                             this.initTime(); // Load time after data is ready
+                            this.fetchRecentCommits(); // START/END: GitHub Commits Fetch
                         } else {
                             throw new Error("profile.json 로드 실패");
                         }
@@ -128,6 +135,109 @@
                         setTimeout(() => this.copied = false, 2000);
                     }
                 },
+                // START: GitHub Commits Methods
+                async fetchRecentCommits() {
+                    const username = this.data.github.username;
+                    if (!username) return;
+                    const CACHE_KEY = `gh_commits_${username}`;
+                    const CACHE_TTL = 5 * 60 * 1000; // 5분
+                    // 캐시 확인
+                    try {
+                        const cached = sessionStorage.getItem(CACHE_KEY);
+                        if (cached) {
+                            const { data, timestamp } = JSON.parse(cached);
+                            if (Date.now() - timestamp < CACHE_TTL) {
+                                this.recentCommits = data;
+                                this.commitsLoaded = true;
+                                if (data.length > 0) this._startCascadingDrop();
+                                return;
+                            }
+                        }
+                    } catch (e) { /* sessionStorage 접근 불가 시 무시 */ }
+                    // API 호출: Events → head SHA → Commits API 병렬 호출로 메시지 취득
+                    try {
+                        const res = await fetch(`https://api.github.com/users/${username}/events/public`);
+                        if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+                        const events = await res.json();
+                        // PushEvent만 최대 3개 추출 (head SHA + repo + date 보존)
+                        const pushCandidates = [];
+                        for (const event of events) {
+                            if (pushCandidates.length >= 3) break;
+                            if (event.type !== 'PushEvent') continue;
+                            if (!event.payload.head) continue;
+                            pushCandidates.push({
+                                sha: event.payload.head,
+                                repo: event.repo.name,
+                                date: event.created_at,
+                                ref: event.payload.ref || ''
+                            });
+                        }
+                        // 각 PushEvent의 head SHA로 커밋 메시지 병렬 취득
+                        const commitDetails = await Promise.all(
+                            pushCandidates.map(async (p) => {
+                                try {
+                                    const r = await fetch(`https://api.github.com/repos/${p.repo}/commits/${p.sha}`);
+                                    if (!r.ok) return null;
+                                    const data = await r.json();
+                                    const message = (data.commit?.message || '').split('\n')[0];
+                                    return {
+                                        sha: p.sha.substring(0, 7),
+                                        message: message || p.ref.replace('refs/heads/', ''),
+                                        repo: p.repo,
+                                        url: `https://github.com/${p.repo}/commit/${p.sha}`,
+                                        date: p.date
+                                    };
+                                } catch (e) { return null; }
+                            })
+                        );
+                        const commits = commitDetails.filter(Boolean);
+                        this.recentCommits = commits;
+                        // 빈 결과는 캐시하지 않음 (일시적 오류/빈 피드 구분)
+                        if (commits.length > 0) {
+                            try {
+                                sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: commits, timestamp: Date.now() }));
+                            } catch (e) { /* 저장 실패 시 무시 */ }
+                        }
+                    } catch (e) {
+                        console.error('GitHub commits fetch failed:', e);
+                        this.commitsError = true;
+                    } finally {
+                        this.commitsLoaded = true;
+                        if (this.recentCommits.length > 0) this._startCascadingDrop();
+                    }
+                },
+                _startCascadingDrop() {
+                    this.commitsVisible = [false, false, false];
+                    setTimeout(() => { this.commitsVisible = [true, false, false]; }, 0);
+                    setTimeout(() => { this.commitsVisible = [true, true, false]; }, 120);
+                    setTimeout(() => { this.commitsVisible = [true, true, true]; }, 240);
+                },
+                commitCardStyle(index) {
+                    const opacities = [1, 0.65, 0.38];
+                    const delays = [0, 120, 240];
+                    const visible = this.commitsVisible[index] || false;
+                    return {
+                        opacity: visible ? (opacities[index] ?? 1) : 0,
+                        transform: `translateY(${visible ? 0 : -20}px)`,
+                        transition: `opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1) ${delays[index]}ms, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) ${delays[index]}ms`,
+                        marginLeft: `${index * 20}px`,
+                        maxWidth: `calc(100% - ${index * 20}px)`
+                    };
+                },
+                relativeTime(dateStr) {
+                    if (!dateStr) return '';
+                    const diff = Date.now() - new Date(dateStr).getTime();
+                    const m = Math.floor(diff / 60000);
+                    const h = Math.floor(diff / 3600000);
+                    const d = Math.floor(diff / 86400000);
+                    if (m < 1) return '방금 전';
+                    if (m < 60) return `${m}분 전`;
+                    if (h < 24) return `${h}시간 전`;
+                    if (d < 30) return `${d}일 전`;
+                    return `${Math.floor(d / 30)}달 전`;
+                },
+                // END: GitHub Commits Methods
+>>>>>>> 8761e6d (feat: 최근 커밋 기록 카드 기능 추가)
                 initTime() {
                     const update = () => {
                         const now = new Date();
@@ -362,6 +472,66 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- START: GitHub Recent Commits Feed -->
+                    <div class="w-full">
+                        <!-- 스켈레톤 로딩 -->
+                        <div x-show="data.github.username && !commitsLoaded" class="w-full flex flex-col gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="h-2.5 w-28 skeleton rounded-full"></div>
+                                <div class="flex-1 h-px bg-slate-800/60"></div>
+                                <div class="h-2.5 w-8 skeleton rounded-full"></div>
+                            </div>
+                            <template x-for="i in [0, 1, 2]" :key="i">
+                                <div :style="`margin-left: ${i * 20}px; max-width: calc(100% - ${i * 20}px);`">
+                                    <div class="p-4 glass rounded-xl">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-1.5 h-1.5 rounded-full skeleton shrink-0"></div>
+                                            <div class="flex-1 space-y-2">
+                                                <div class="h-3 skeleton rounded-md" :style="`width: ${90 - i * 15}%;`"></div>
+                                                <div class="h-2.5 w-40 skeleton rounded-md"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- 커밋 카드 (데이터 있을 때만 표시) -->
+                        <div x-show="commitsLoaded && recentCommits.length > 0" class="w-full flex flex-col gap-3">
+                            <!-- 섹션 헤더 -->
+                            <div class="flex items-center gap-3">
+                                <h3 class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest shrink-0">Recent Commits</h3>
+                                <div class="flex-1 h-px bg-slate-800"></div>
+                            </div>
+                            <!-- 커밋 카드 목록 -->
+                            <template x-for="(commit, index) in recentCommits" :key="commit.sha">
+                                <div :style="commitCardStyle(index)">
+                                    <a :href="commit.url" target="_blank" rel="noopener noreferrer"
+                                       class="group flex items-start gap-3 p-4 glass rounded-xl hover:bg-white/5 transition-colors touch-active">
+                                        <span class="mt-[5px] w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"
+                                              :style="`opacity: ${[1, 0.7, 0.4][index]};`"></span>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-slate-200 truncate group-hover:text-blue-400 transition-colors"
+                                               x-text="commit.message"></p>
+                                            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                                <span class="text-[11px] text-slate-500 font-medium"
+                                                      x-text="commit.repo.split('/')[1] || commit.repo"></span>
+                                                <span class="text-slate-700 text-xs">·</span>
+                                                <code class="font-mono text-[11px] text-slate-600 bg-slate-800/50 px-1.5 py-0.5 rounded"
+                                                      x-text="commit.sha"></code>
+                                                <span class="text-slate-700 text-xs">·</span>
+                                                <span class="text-[11px] text-slate-500"
+                                                      x-text="relativeTime(commit.date)"></span>
+                                            </div>
+                                        </div>
+                                        <svg class="w-3.5 h-3.5 text-slate-700 group-hover:text-blue-400 transition-colors shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                    </a>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <!-- END: GitHub Recent Commits Feed -->
                 </div>
             </section>
         </main>
