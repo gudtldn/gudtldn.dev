@@ -72,6 +72,9 @@
                 error: false,
                 copied: false,
                 currentTime: "",
+                // START: Military Service State
+                militaryInfo: null,
+                // END: Military Service State
                 // START: GitHub Commits State
                 recentCommits: [],
                 commitsLoaded: false,
@@ -135,6 +138,7 @@
                         setTimeout(() => this.copied = false, 2000);
                     }
                 },
+
                 // START: GitHub Commits Methods
                 async fetchRecentCommits() {
                     const username = this.data.github.username;
@@ -237,7 +241,86 @@
                     return `${Math.floor(d / 30)}달 전`;
                 },
                 // END: GitHub Commits Methods
->>>>>>> 8761e6d (feat: 최근 커밋 기록 카드 기능 추가)
+
+                // START: Military Service Logic
+                updateMilitaryInfo() {
+                    const now = new Date();
+                    // Enlistment: June 8, 2026 (Month index 5 in JS)
+                    const enlist = new Date(2026, 5, 8);
+                    // Discharge: Dec 7, 2027 (Month index 11 in JS)
+                    const discharge = new Date(2027, 11, 7);
+                    
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    
+                    const totalMs = discharge - enlist;
+                    const servedMs = now - enlist;
+                    const circ = 251.327; // Circle circumference for radial progress
+                    
+                    if (now < enlist) {
+                        const diffTime = enlist - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        this.militaryInfo = {
+                            state: 'pre',
+                            badgeText: `입대 D-${diffDays}`,
+                            cardTitle: '군 입대 대기 중',
+                            dday: `D-${diffDays}`,
+                            percent: "0.000000",
+                            dashoffset: circ,
+                            asciiBar: '░'.repeat(20),
+                            daysLeft: diffDays,
+                            totalDays: Math.ceil(totalMs / (1000 * 60 * 60 * 24)),
+                            color: '#f59e0b' // Solid vibrant Amber
+                        };
+                    } else if (now >= enlist && now < discharge) {
+                        const totalDays = Math.ceil(totalMs / (1000 * 60 * 60 * 24));
+                        const diffTime = discharge - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        const percentVal = Math.min(100, Math.max(0, (servedMs / totalMs) * 100));
+                        
+                        const barLength = 20;
+                        const filledLength = Math.min(barLength, Math.max(0, Math.round((percentVal / 100) * barLength)));
+                        const asciiBar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
+                        
+                        // Linear interpolation from Amber (245, 158, 11) to Emerald (16, 185, 129)
+                        const p = percentVal / 100;
+                        const r = Math.round(245 + (16 - 245) * p);
+                        const g = Math.round(158 + (185 - 158) * p);
+                        const b = Math.round(11 + (129 - 11) * p);
+                        const currentColor = `rgb(${r}, ${g}, ${b})`;
+                        
+                        this.militaryInfo = {
+                            state: 'serving',
+                            badgeText: `군 복무 중 (D-${diffDays})`,
+                            cardTitle: '군 복무 현황',
+                            dday: `D-${diffDays}`,
+                            percent: percentVal.toFixed(7),
+                            dashoffset: (circ - (percentVal / 100) * circ).toFixed(3),
+                            asciiBar: asciiBar,
+                            daysLeft: diffDays,
+                            totalDays: totalDays,
+                            color: currentColor
+                        };
+                    } else if (now >= discharge && now < new Date(discharge.getTime() + 30 * 24 * 60 * 60 * 1000)) {
+                        // After discharge, show completion state during a 30-day grace period
+                        const totalDays = Math.ceil(totalMs / (1000 * 60 * 60 * 24));
+                        this.militaryInfo = {
+                            state: 'post',
+                            badgeText: '전역 완료 🎉',
+                            cardTitle: '군 복무 완료',
+                            dday: '전역! 🎉',
+                            percent: "100.000000",
+                            dashoffset: 0,
+                            asciiBar: '',
+                            daysLeft: 0,
+                            totalDays: totalDays,
+                            color: '#10b981' // Solid Emerald Green
+                        };
+                    } else {
+                        this.militaryInfo = null; // Hide everything automatically after the 30-day grace period
+                    }
+                },
+                // END: Military Service Logic
+
                 initTime() {
                     const update = () => {
                         const now = new Date();
@@ -253,9 +336,12 @@
                         } catch (e) {
                             this.currentTime = now.toLocaleTimeString();
                         }
+                        // START: Military Service Update Call
+                        this.updateMilitaryInfo();
+                        // END: Military Service Update Call
                     };
                     update();
-                    setInterval(update, 1000);
+                    setInterval(update, 100);
                 }
             }));
         });
@@ -314,6 +400,13 @@
                         <template x-for="badge in (Array.isArray(data.status) ? data.status : [data.status].filter(Boolean))" :key="badge">
                             <span class="px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider rounded-md bg-blue-900/30 text-blue-300" x-text="badge"></span>
                         </template>
+                        <!-- START: Military Status Badge -->
+                        <template x-if="militaryInfo && militaryInfo.state !== 'post'">
+                            <span class="px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider rounded-md"
+                                  :class="militaryInfo.state === 'pre' ? 'bg-amber-900/30 text-amber-300' : 'bg-emerald-900/30 text-emerald-300'"
+                                  x-text="militaryInfo.badgeText"></span>
+                        </template>
+                        <!-- END: Military Status Badge -->
                     </div>
                 </div>
             </div>
@@ -355,6 +448,34 @@
                     </a>
                 </template>
             </div>
+            
+            <!-- START: Military Service Bio Block -->
+            <template x-if="militaryInfo">
+                <div class="glass p-4 rounded-2xl border border-white/5 w-full mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <!-- Left: Status & D-day -->
+                    <div class="flex items-center gap-3 shrink-0 text-xs">
+                        <span class="w-1.5 h-1.5 rounded-full transition-colors duration-300"
+                              :style="`background-color: ${militaryInfo.color}; box-shadow: 0 0 6px ${militaryInfo.color};`"></span>
+                        <span class="font-medium text-slate-300">육군 • <span x-text="militaryInfo.cardTitle"></span></span>
+                        <span class="font-semibold text-white text-sm" x-text="militaryInfo.dday"></span>
+                    </div>
+                    
+                    <!-- Middle: Stretching Progress Bar -->
+                    <div class="flex-1 min-w-[120px] py-1">
+                        <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-900/60">
+                            <div class="h-full rounded-full transition-all duration-1000 ease-out"
+                                 :style="`width: ${militaryInfo.state === 'pre' ? 0 : militaryInfo.percent}%; background-color: ${militaryInfo.color}; box-shadow: 0 0 8px ${militaryInfo.color};`"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Percent & Dates -->
+                    <div class="flex items-center gap-4 justify-between sm:justify-end text-xs text-slate-400 shrink-0">
+                        <span x-text="militaryInfo.state === 'pre' ? '대기 중 (0%)' : (militaryInfo.state === 'post' ? '전역 완료 (100%)' : `${militaryInfo.percent}%`)" class="font-medium"></span>
+                        <span class="font-medium text-slate-500">2026.06.08 ~ 2027.12.07</span>
+                    </div>
+                </div>
+            </template>
+            <!-- END: Military Service Bio Block -->
         </header>
 
         <main class="space-y-12 md:space-y-20">
@@ -453,17 +574,15 @@
             <!-- Activity & Stats -->
             <section x-show="data.github.username" class="pt-12 border-t border-slate-800">
                 <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-10 text-center">Activity & Performance</h2>
-                
                 <div class="flex flex-col gap-10">
                     <div class="flex flex-col md:flex-row items-center justify-center gap-6">
                         <div class="w-full md:w-auto flex justify-center">
                             <img :src="`https://github-readme-stats-gudtldn.vercel.app/api?username=${data.github.username}&bg_color=00000000&hide_border=true&show_icons=true&include_all_commits=true&count_private=true&text_color=7e8c9a&icon_color=${data.github.themeColor}&title_color=ffffff&card_width=380`" alt="GitHub Stats" class="max-w-full">
                         </div>
                         <div class="w-full md:w-auto flex justify-center">
-                            <img :src="`https://github-readme-stats-gudtldn.vercel.app/api/top-langs?username=${data.github.username}&bg_color=00000000&hide_border=true&langs_count=6&exclude_repo=${data.github.username}.github.io,github-readme-stats,gudtldn.dev&layout=compact&text_color=7e8c9a&icon_color=${data.github.themeColor}&title_color=ffffff&card_width=320`" alt="Top Languages" class="max-w-full">
+                            <img :src="`https://github-readme-stats-gudtldn.vercel.app/api/top-langs?username=${data.github.username}&bg_color=00000000&hide_border=true&langs_count=10&exclude_repo=${data.github.username}.github.io,github-readme-stats,gudtldn.dev,ProgrammingClass_PPT&layout=compact&text_color=7e8c9a&icon_color=${data.github.themeColor}&title_color=ffffff&card_width=320`" alt="Top Languages" class="max-w-full">
                         </div>
                     </div>
-
                     <div class="w-full flex flex-col items-center gap-4">
                         <h3 class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Commit Contribution</h3>
                         <div class="w-full max-w-2xl overflow-x-auto pb-4 scrollbar-hide">
@@ -546,6 +665,5 @@
             </p>
         </footer>
     </div>
-
 </body>
 </html>
