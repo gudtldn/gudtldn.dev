@@ -15,8 +15,10 @@
       ]
     },
     "location": { "type": "string" },
+    "timezone": { "type": "string", "description": "IANA 타임존 (예: Asia/Seoul)" },
+    "timezoneAbbr": { "type": "string", "description": "표시용 약어 (예: KST)" },
     "blogUrl": { "type": "string" },
-    "bio": { "type": "string" },
+    "bio": { "type": "string", "description": "HTML 허용 (x-html로 렌더링됨). index.html의 정적 description/og:description과 함께 수정할 것" },
     "socials": {
       "type": "array",
       "items": {
@@ -76,14 +78,16 @@
       }
     }
   },
+  "required": ["name", "domain", "bio"],
   "definitions": {
     "badge": {
       "type": "object",
       "properties": {
         "name": { "type": "string" },
-        "color": { "type": "string" },
-        "logo": { "type": "string" }
-      }
+        "logo": { "type": "string", "description": "skillicons.dev 아이콘 ID" },
+        "url": { "type": "string" }
+      },
+      "required": ["name", "logo"]
     }
   }
 }
