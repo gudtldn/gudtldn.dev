@@ -58,6 +58,35 @@
         "tools": { "type": "array", "items": { "$ref": "#/definitions/badge" } }
       }
     },
+    "projects": {
+      "type": "array",
+      "description": "포트폴리오 프로젝트. featured가 true인 항목이 먼저 표시됨",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "summary": { "type": "string", "description": "한 줄 요약" },
+          "description": { "type": "string", "description": "2~3줄 상세 설명" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "image": { "type": "string", "description": "썸네일 경로 (예: projects/foo.png). 없으면 그라데이션 대체" },
+          "status": { "type": "string", "description": "예: 진행 중, 완료" },
+          "featured": { "type": "boolean" },
+          "links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "enum": ["github", "demo", "blog", "video", "other"] },
+                "label": { "type": "string", "description": "생략 시 type에 맞는 기본 라벨" },
+                "url": { "type": "string" }
+              },
+              "required": ["url"]
+            }
+          }
+        },
+        "required": ["title", "summary"]
+      }
+    },
     "infrastructure": {
       "type": "array",
       "items": {

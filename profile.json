@@ -52,6 +52,24 @@
       { "name": "VScode", "logo": "vscode", "url": "https://code.visualstudio.com/" }
     ]
   },
+  "projects": [
+    {
+      "title": "Project Name (예시)",
+      "summary": "프로젝트를 한 줄로 설명하는 자리표시 문구입니다.",
+      "description": "어떤 문제를 풀었고 무엇이 핵심인지 2~3줄로 적는 자리입니다. 실제 내용으로 교체하세요.",
+      "tags": ["C++", "DirectX 12", "HLSL"],
+      "status": "진행 중",
+      "featured": true,
+      "links": [
+        { "type": "github", "url": "https://github.com/gudtldn" },
+        { "type": "blog", "url": "https://blog.gudtldn.dev" }
+      ]
+    },
+    {
+      "title": "Another Project (예시)",
+      "summary": "이미지와 링크가 없어도 카드가 깨지지 않는지 확인하는 최소 예시입니다."
+    }
+  ],
   "infrastructure": [],
   "github": {
     "username": "gudtldn",
