@@ -107,6 +107,21 @@ python3 -m http.server 8000
 - 가져오기에 실패하거나 피드가 비어 있으면 섹션 전체가 숨겨지고, 결과는 10분간 `sessionStorage`에 캐시됩니다.
 - `http(s)` 링크만 표시하며, 제목/요약은 텍스트로만 출력합니다 (HTML 실행 없음).
 
+## GitHub API 중계 (Pages Function)
+
+프로젝트 카드와 최근 커밋은 GitHub API를 씁니다. 방문자 브라우저가 직접 부르면 IP당 시간당 60회 제한에 걸리므로,
+`functions/api/github/[[path]].js`가 `/api/github/*`로 중계하면서 엣지에 캐시합니다.
+
+- 허용한 경로(저장소 정보, 커밋 상세, 사용자 공개 이벤트)만 중계합니다.
+- 캐시 시간: 저장소 정보 5분, 활동 이벤트 1분, 커밋 상세는 SHA로 조회하므로 영구.
+  시간이 지나면 ETag로 재검증하며, 바뀐 게 없으면(304) GitHub 호출 한도를 쓰지 않습니다.
+- GitHub이 실패하면 만료된 캐시라도 있으면 그것을 돌려줍니다.
+- **토큰(선택)**: Cloudflare Pages → Settings → Variables and Secrets에 `GITHUB_TOKEN`을 **Secret**으로 추가하면 시간당 5,000회로 늘어납니다.
+  공개 데이터만 읽으므로 권한 없는 fine-grained 토큰이면 충분합니다. 없어도 동작합니다.
+- 로컬(`python3 -m http.server`)에는 Function이 없으므로 `api.github.com`을 직접 호출합니다. Function까지 확인하려면 `npx wrangler pages dev .`를 사용하세요.
+- 응답 헤더 `X-Cache`(HIT/MISS/REVALIDATED/STALE)로 캐시 상태를, `x-ratelimit-limit`(토큰이 적용되면 5000, 아니면 60)로 인증 여부를 확인할 수 있습니다.
+- Cloudflare 변수는 **변경 후 새로 배포된 빌드부터** 적용됩니다.
+
 ## ⚠️ 함께 고쳐야 하는 곳
 
 링크 미리보기(Discord, 카카오톡 등)는 JS를 실행하지 않는 크롤러가 읽기 때문에, **`index.html`의 `<title>`, `description`, `og:title`, `og:description`이 정적으로 들어 있습니다.**

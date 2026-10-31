@@ -1,3 +1,13 @@
+// GitHub API 호출: 같은 도메인의 Pages Function(/api/github/*)을 먼저 쓰고,
+// 없는 환경(로컬 서버 등)에서는 api.github.com을 직접 호출한다.
+async function githubFetch(path) {
+    try {
+        const res = await fetch(`/api/github/${path}`);
+        if (res.headers.get('X-GH-Proxy')) return res;
+    } catch (e) { /* 중계 불가 시 직접 호출 */ }
+    return fetch(`https://api.github.com/${path}`);
+}
+
 document.addEventListener('alpine:init', () => {
     Alpine.data('profileApp', () => ({
         data: {
@@ -87,7 +97,7 @@ document.addEventListener('alpine:init', () => {
                 }
             } catch (e) { /* sessionStorage 접근 불가 시 무시 */ }
             try {
-                const res = await fetch(`https://api.github.com/repos/${repo}`);
+                const res = await githubFetch(`repos/${repo}`);
                 if (!res.ok) throw new Error(`GitHub API ${res.status}`);
                 const j = await res.json();
                 const data = { name: j.name, description: j.description, topics: j.topics, html_url: j.html_url, pushed_at: j.pushed_at };
@@ -261,7 +271,7 @@ document.addEventListener('alpine:init', () => {
             } catch (e) { /* sessionStorage 접근 불가 시 무시 */ }
             // API 호출: Events → head SHA → Commits API 병렬 호출로 메시지 취득
             try {
-                const res = await fetch(`https://api.github.com/users/${username}/events/public`);
+                const res = await githubFetch(`users/${username}/events/public`);
                 if (!res.ok) throw new Error(`GitHub API ${res.status}`);
                 const events = await res.json();
                 // PushEvent만 최대 3개 추출 (head SHA + repo + date 보존)
@@ -281,7 +291,7 @@ document.addEventListener('alpine:init', () => {
                 const commitDetails = await Promise.all(
                     pushCandidates.map(async (p) => {
                         try {
-                            const r = await fetch(`https://api.github.com/repos/${p.repo}/commits/${p.sha}`);
+                            const r = await githubFetch(`repos/${p.repo}/commits/${p.sha}`);
                             if (!r.ok) return null;
                             const data = await r.json();
                             const message = (data.commit?.message || '').split('\n')[0];
