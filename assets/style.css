@@ -1,0 +1,30 @@
+body { 
+    font-family: 'Inter', sans-serif; 
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+}
+.glass { 
+    background: rgba(255, 255, 255, 0.03); 
+    backdrop-filter: blur(10px); 
+    border: 1px solid rgba(255, 255, 255, 0.05); 
+}
+[x-cloak] { display: none !important; }
+
+.touch-active:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+}
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Skeleton animation */
+.skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

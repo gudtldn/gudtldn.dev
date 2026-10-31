@@ -2,350 +2,28 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d1117">
     <link rel="canonical" href="https://gudtldn.dev" />
     <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
     <link rel="manifest" href="/favicons/site.webmanifest">
-    <title>Loading...</title>
-    <meta name="description" content="Personal Profile Page">
-    <meta property="og:title" content="Profile">
-    <meta property="og:description" content="Personal Profile Page">
+    <!-- 크롤러/링크 미리보기는 JS를 실행하지 않으므로 정적 값을 둔다. (로드 후 updateMeta()가 profile.json 기준으로 갱신) -->
+    <title>Siwoo Hyong | gudtldn.dev</title>
+    <meta name="description" content="C++, 그래픽스 프로그래밍에 대해서 공부하고 있는 학생 개발자 입니다. 단순히 돌아가는 코드보다 그 이면의 원리와 아키텍처를 고민하고, 배운 것을 기록으로 남기는 것을 좋아합니다.">
+    <meta property="og:title" content="Siwoo Hyong | gudtldn.dev">
+    <meta property="og:description" content="C++, 그래픽스 프로그래밍에 대해서 공부하고 있는 학생 개발자 입니다. 단순히 돌아가는 코드보다 그 이면의 원리와 아키텍처를 고민하고, 배운 것을 기록으로 남기는 것을 좋아합니다.">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gudtldn.dev">
+    <meta property="og:site_name" content="gudtldn.dev">
+    <meta property="og:locale" content="ko_KR">
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            scroll-behavior: smooth;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .glass { 
-            background: rgba(255, 255, 255, 0.03); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-        }
-        [x-cloak] { display: none !important; }
-        
-        .touch-active:active {
-            transform: scale(0.98);
-            opacity: 0.8;
-        }
-        
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    <link rel="stylesheet" href="/assets/style.css">
 
-        /* Skeleton animation */
-        .skeleton {
-            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
-            background-size: 200% 100%;
-            animation: skeleton-loading 1.5s infinite;
-        }
-        @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-    </style>
-
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('profileApp', () => ({
-                data: {
-                    name: "",
-                    domain: "",
-                    status: [],
-                    location: "",
-                    timezone: "UTC",
-                    timezoneAbbr: "",
-                    blogUrl: "",
-                    bio: "",
-                    socials: [],
-                    customLinks: [],
-                    currentlyFocusing: [],
-                    techStack: { languages: [], tools: [] },
-                    infrastructure: [],
-                    github: { username: "", themeColor: "3b82f6" }
-                },
-                loaded: false,
-                error: false,
-                copied: false,
-                currentTime: "",
-                // START: Military Service State
-                militaryInfo: null,
-                // END: Military Service State
-                // START: GitHub Commits State
-                recentCommits: [],
-                commitsLoaded: false,
-                commitsError: false,
-                commitsVisible: [false, false, false],
-                // END: GitHub Commits State
-                async init() {
-                    try {
-                        const response = await fetch('./profile.json');
-                        if (response.ok) {
-                            this.data = await response.json();
-                            this.updateMeta();
-                            this.initTime(); // Load time after data is ready
-                            this.fetchRecentCommits(); // START/END: GitHub Commits Fetch
-                        } else {
-                            throw new Error("profile.json 로드 실패");
-                        }
-                    } catch (e) {
-                        console.error("데이터를 불러오는 중 문제가 발생했습니다:", e);
-                        this.error = true;
-                        document.title = "Error | Profile";
-                    } finally {
-                        setTimeout(() => this.loaded = true, 300);
-                    }
-                },
-                updateMeta() {
-                    const title = `${this.data.name} | ${this.data.domain}`;
-                    const description = this.data.bio.replace(/<[^>]*>?/gm, '').substring(0, 160);
-                    
-                    document.title = title;
-                    
-                    // Update Meta Tags
-                    const metaMap = {
-                        'description': description,
-                        'og:title': title,
-                        'og:description': description
-                    };
-
-                    Object.entries(metaMap).forEach(([name, content]) => {
-                        let el = document.querySelector(`meta[name="${name}"]`) || 
-                                 document.querySelector(`meta[property="${name}"]`);
-                        if (el) el.setAttribute('content', content);
-                    });
-                },
-                async copyDiscord(id) {
-                    if (!id) return;
-                    try {
-                        await navigator.clipboard.writeText(id);
-                        this.copied = true;
-                        setTimeout(() => this.copied = false, 2000);
-                    } catch (err) {
-                        console.error('Failed to copy text: ', err);
-                        // Fallback
-                        const el = document.createElement('textarea');
-                        el.value = id;
-                        document.body.appendChild(el);
-                        el.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(el);
-                        this.copied = true;
-                        setTimeout(() => this.copied = false, 2000);
-                    }
-                },
-
-                // START: GitHub Commits Methods
-                async fetchRecentCommits() {
-                    const username = this.data.github.username;
-                    if (!username) return;
-                    const CACHE_KEY = `gh_commits_${username}`;
-                    const CACHE_TTL = 5 * 60 * 1000; // 5분
-                    // 캐시 확인
-                    try {
-                        const cached = sessionStorage.getItem(CACHE_KEY);
-                        if (cached) {
-                            const { data, timestamp } = JSON.parse(cached);
-                            if (Date.now() - timestamp < CACHE_TTL) {
-                                this.recentCommits = data;
-                                this.commitsLoaded = true;
-                                if (data.length > 0) this._startCascadingDrop();
-                                return;
-                            }
-                        }
-                    } catch (e) { /* sessionStorage 접근 불가 시 무시 */ }
-                    // API 호출: Events → head SHA → Commits API 병렬 호출로 메시지 취득
-                    try {
-                        const res = await fetch(`https://api.github.com/users/${username}/events/public`);
-                        if (!res.ok) throw new Error(`GitHub API ${res.status}`);
-                        const events = await res.json();
-                        // PushEvent만 최대 3개 추출 (head SHA + repo + date 보존)
-                        const pushCandidates = [];
-                        for (const event of events) {
-                            if (pushCandidates.length >= 3) break;
-                            if (event.type !== 'PushEvent') continue;
-                            if (!event.payload.head) continue;
-                            pushCandidates.push({
-                                sha: event.payload.head,
-                                repo: event.repo.name,
-                                date: event.created_at,
-                                ref: event.payload.ref || ''
-                            });
-                        }
-                        // 각 PushEvent의 head SHA로 커밋 메시지 병렬 취득
-                        const commitDetails = await Promise.all(
-                            pushCandidates.map(async (p) => {
-                                try {
-                                    const r = await fetch(`https://api.github.com/repos/${p.repo}/commits/${p.sha}`);
-                                    if (!r.ok) return null;
-                                    const data = await r.json();
-                                    const message = (data.commit?.message || '').split('\n')[0];
-                                    return {
-                                        sha: p.sha.substring(0, 7),
-                                        message: message || p.ref.replace('refs/heads/', ''),
-                                        repo: p.repo,
-                                        url: `https://github.com/${p.repo}/commit/${p.sha}`,
-                                        date: p.date
-                                    };
-                                } catch (e) { return null; }
-                            })
-                        );
-                        const commits = commitDetails.filter(Boolean);
-                        this.recentCommits = commits;
-                        // 빈 결과는 캐시하지 않음 (일시적 오류/빈 피드 구분)
-                        if (commits.length > 0) {
-                            try {
-                                sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: commits, timestamp: Date.now() }));
-                            } catch (e) { /* 저장 실패 시 무시 */ }
-                        }
-                    } catch (e) {
-                        console.error('GitHub commits fetch failed:', e);
-                        this.commitsError = true;
-                    } finally {
-                        this.commitsLoaded = true;
-                        if (this.recentCommits.length > 0) this._startCascadingDrop();
-                    }
-                },
-                _startCascadingDrop() {
-                    this.commitsVisible = [false, false, false];
-                    setTimeout(() => { this.commitsVisible = [true, false, false]; }, 0);
-                    setTimeout(() => { this.commitsVisible = [true, true, false]; }, 120);
-                    setTimeout(() => { this.commitsVisible = [true, true, true]; }, 240);
-                },
-                commitCardStyle(index) {
-                    const opacities = [1, 0.65, 0.38];
-                    const delays = [0, 120, 240];
-                    const visible = this.commitsVisible[index] || false;
-                    return {
-                        opacity: visible ? (opacities[index] ?? 1) : 0,
-                        transform: `translateY(${visible ? 0 : -20}px)`,
-                        transition: `opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1) ${delays[index]}ms, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) ${delays[index]}ms`,
-                        marginLeft: `${index * 20}px`,
-                        maxWidth: `calc(100% - ${index * 20}px)`
-                    };
-                },
-                relativeTime(dateStr) {
-                    if (!dateStr) return '';
-                    const diff = Date.now() - new Date(dateStr).getTime();
-                    const m = Math.floor(diff / 60000);
-                    const h = Math.floor(diff / 3600000);
-                    const d = Math.floor(diff / 86400000);
-                    if (m < 1) return '방금 전';
-                    if (m < 60) return `${m}분 전`;
-                    if (h < 24) return `${h}시간 전`;
-                    if (d < 30) return `${d}일 전`;
-                    return `${Math.floor(d / 30)}달 전`;
-                },
-                // END: GitHub Commits Methods
-
-                // START: Military Service Logic
-                updateMilitaryInfo() {
-                    const now = new Date();
-                    // Enlistment: June 8, 2026 (Month index 5 in JS)
-                    const enlist = new Date(2026, 5, 8);
-                    // Discharge: Dec 7, 2027 (Month index 11 in JS)
-                    const discharge = new Date(2027, 11, 7);
-                    
-                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    
-                    const totalMs = discharge - enlist;
-                    const servedMs = now - enlist;
-                    const circ = 251.327; // Circle circumference for radial progress
-                    
-                    if (now < enlist) {
-                        const diffTime = enlist - today;
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        this.militaryInfo = {
-                            state: 'pre',
-                            badgeText: `입대 D-${diffDays}`,
-                            cardTitle: '군 입대 대기 중',
-                            dday: `D-${diffDays}`,
-                            percent: "0.000000",
-                            dashoffset: circ,
-                            asciiBar: '░'.repeat(20),
-                            daysLeft: diffDays,
-                            totalDays: Math.ceil(totalMs / (1000 * 60 * 60 * 24)),
-                            color: '#f59e0b' // Solid vibrant Amber
-                        };
-                    } else if (now >= enlist && now < discharge) {
-                        const totalDays = Math.ceil(totalMs / (1000 * 60 * 60 * 24));
-                        const diffTime = discharge - today;
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        const percentVal = Math.min(100, Math.max(0, (servedMs / totalMs) * 100));
-                        
-                        const barLength = 20;
-                        const filledLength = Math.min(barLength, Math.max(0, Math.round((percentVal / 100) * barLength)));
-                        const asciiBar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
-                        
-                        // Linear interpolation from Amber (245, 158, 11) to Emerald (16, 185, 129)
-                        const p = percentVal / 100;
-                        const r = Math.round(245 + (16 - 245) * p);
-                        const g = Math.round(158 + (185 - 158) * p);
-                        const b = Math.round(11 + (129 - 11) * p);
-                        const currentColor = `rgb(${r}, ${g}, ${b})`;
-                        
-                        this.militaryInfo = {
-                            state: 'serving',
-                            badgeText: `군 복무 중 (D-${diffDays})`,
-                            cardTitle: '군 복무 현황',
-                            dday: `D-${diffDays}`,
-                            percent: percentVal.toFixed(7),
-                            dashoffset: (circ - (percentVal / 100) * circ).toFixed(3),
-                            asciiBar: asciiBar,
-                            daysLeft: diffDays,
-                            totalDays: totalDays,
-                            color: currentColor
-                        };
-                    } else if (now >= discharge && now < new Date(discharge.getTime() + 30 * 24 * 60 * 60 * 1000)) {
-                        // After discharge, show completion state during a 30-day grace period
-                        const totalDays = Math.ceil(totalMs / (1000 * 60 * 60 * 24));
-                        this.militaryInfo = {
-                            state: 'post',
-                            badgeText: '전역 완료 🎉',
-                            cardTitle: '군 복무 완료',
-                            dday: '전역! 🎉',
-                            percent: "100.000000",
-                            dashoffset: 0,
-                            asciiBar: '',
-                            daysLeft: 0,
-                            totalDays: totalDays,
-                            color: '#10b981' // Solid Emerald Green
-                        };
-                    } else {
-                        this.militaryInfo = null; // Hide everything automatically after the 30-day grace period
-                    }
-                },
-                // END: Military Service Logic
-
-                initTime() {
-                    const update = () => {
-                        const now = new Date();
-                        try {
-                            const timeString = new Intl.DateTimeFormat('en-US', {
-                                timeZone: this.data.timezone || 'Asia/Seoul',
-                                hour12: false,
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit'
-                            }).format(now);
-                            this.currentTime = `${timeString} ${this.data.timezoneAbbr || ''}`;
-                        } catch (e) {
-                            this.currentTime = now.toLocaleTimeString();
-                        }
-                        // START: Military Service Update Call
-                        this.updateMilitaryInfo();
-                        // END: Military Service Update Call
-                    };
-                    update();
-                    setInterval(update, 100);
-                }
-            }));
-        });
-    </script>
+    <script src="/assets/app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body x-data="profileApp" class="bg-[#0d1117] text-slate-200 min-h-screen transition-colors duration-300" x-cloak>
@@ -491,6 +169,69 @@
                             <span class="block text-[10px] text-slate-400 mb-1 font-medium uppercase tracking-wider" x-text="focus.category"></span>
                             <span class="font-medium text-sm" x-text="focus.item"></span>
                         </div>
+                    </template>
+                </div>
+            </section>
+
+            <!-- Projects -->
+            <section x-show="data.projects && data.projects.length > 0">
+                <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
+                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+                    Projects
+                </h2>
+                <div class="grid grid-cols-1 gap-4" :class="isSingleProject ? 'md:grid-cols-1' : 'md:grid-cols-2'">
+                    <template x-for="project in sortedProjects" :key="project.key">
+                        <article class="glass rounded-2xl overflow-hidden flex flex-col" :class="isSingleProject ? 'md:flex-row' : ''">
+                            <!-- 썸네일: 이미지가 없으면 그라데이션 대체. 위에 페이드/틴트/테두리 오버레이를 겹침 -->
+                            <div class="relative w-full aspect-video shrink-0 overflow-hidden bg-slate-900"
+                                 :class="isSingleProject ? 'md:w-[55%] md:aspect-auto md:min-h-[18rem]' : ''">
+                                <template x-if="project.image">
+                                    <img :src="project.image" :alt="project.title" loading="lazy" class="absolute inset-0 w-full h-full object-cover">
+                                </template>
+                                <template x-if="!project.image">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-slate-800/40 to-slate-900/60" aria-hidden="true"></div>
+                                </template>
+                                <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent"></div>
+                                    <div class="absolute inset-0 bg-gradient-to-t from-[#14181e] via-[#14181e]/30 to-transparent"
+                                         :class="isSingleProject ? 'md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-[#14181e]' : ''"></div>
+                                    <div class="absolute inset-0 ring-1 ring-inset ring-white/5"></div>
+                                </div>
+                            </div>
+                            <div class="p-5 flex flex-col flex-1 gap-3" :class="isSingleProject ? 'md:p-8 md:justify-center' : ''">
+                                <div class="flex items-start justify-between gap-3">
+                                    <h3 class="font-semibold text-base text-white" :class="isSingleProject ? 'md:text-xl' : ''" x-text="project.title"></h3>
+                                    <template x-if="project.status">
+                                        <span class="shrink-0 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-md"
+                                              :class="project.statusActive ? 'bg-emerald-900/30 text-emerald-300' : 'bg-white/5 text-slate-400'"
+                                              x-text="project.status"></span>
+                                    </template>
+                                </div>
+                                <template x-if="project.summary">
+                                    <p class="text-sm text-slate-300" x-text="project.summary"></p>
+                                </template>
+                                <template x-if="project.description">
+                                    <p class="text-xs text-slate-400 leading-relaxed" x-text="project.description"></p>
+                                </template>
+                                <template x-if="project.tags && project.tags.length > 0">
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <template x-for="tag in project.tags" :key="tag">
+                                            <span class="px-2 py-0.5 text-[10px] font-medium rounded-md bg-white/5 text-slate-300" x-text="tag"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template x-if="project.links && project.links.length > 0">
+                                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-auto pt-2">
+                                        <template x-for="link in project.links" :key="link.url">
+                                            <a :href="link.url" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 text-xs font-medium text-slate-300 hover:text-blue-500 transition-colors">
+                                                <span x-text="projectLinkLabel(link)"></span>
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M7 7h10v10"></path></svg>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </article>
                     </template>
                 </div>
             </section>
