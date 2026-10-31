@@ -8,6 +8,7 @@ document.addEventListener('alpine:init', () => {
             timezone: "UTC",
             timezoneAbbr: "",
             blogUrl: "",
+            blogFeedUrl: "",
             bio: "",
             socials: [],
             customLinks: [],
@@ -100,6 +101,80 @@ document.addEventListener('alpine:init', () => {
             }
         },
         // END: Projects Methods
+
+        // START: Blog Posts (Atom/RSS 피드)
+        blogPosts: [],
+        // 피드(Atom 또는 RSS)를 { title, url, date, summary } 목록으로 변환. 형식이 이상하면 빈 배열
+        parseFeed(xmlText, limit = 5) {
+            const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+            if (doc.querySelector('parsererror')) return [];
+            const text = (el, sel) => (el.querySelector(sel)?.textContent || '').trim();
+            // 요약에 섞인 HTML 태그를 제거하고 한 줄로 정리 (DOMParser 문서는 스크립트/리소스를 실행하지 않음)
+            const plain = (html) => {
+                const body = new DOMParser().parseFromString(html || '', 'text/html').body;
+                const t = (body.textContent || '').replace(/\s+/g, ' ').trim();
+                return t.length > 120 ? t.slice(0, 120).trimEnd() + '…' : t;
+            };
+            const entries = [...doc.querySelectorAll('entry')];
+            const items = entries.length ? entries : [...doc.querySelectorAll('item')];
+            const posts = [];
+            for (const el of items) {
+                const title = text(el, 'title');
+                // Atom: <link rel="alternate" href>, RSS: <link>텍스트</link>
+                const linkEl = el.querySelector('link[rel="alternate"]') || el.querySelector('link');
+                const url = (linkEl?.getAttribute('href') || linkEl?.textContent || '').trim();
+                // http(s) 링크만 허용 (javascript: 등 차단)
+                if (!title || !/^https?:\/\//i.test(url)) continue;
+                const dateRaw = text(el, 'published') || text(el, 'updated') || text(el, 'pubDate');
+                const date = new Date(dateRaw);
+                posts.push({
+                    title,
+                    url,
+                    time: isNaN(date) ? 0 : date.getTime(),
+                    summary: plain(text(el, 'summary') || text(el, 'description'))
+                });
+            }
+            return posts.sort((a, b) => b.time - a.time).slice(0, limit);
+        },
+        formatDate(time) {
+            if (!time) return '';
+            try {
+                // en-CA는 YYYY-MM-DD 형식
+                return new Intl.DateTimeFormat('en-CA', {
+                    timeZone: this.data.timezone || 'Asia/Seoul',
+                    year: 'numeric', month: '2-digit', day: '2-digit'
+                }).format(new Date(time)).replace(/-/g, '.');
+            } catch (e) { return ''; }
+        },
+        async loadBlogPosts() {
+            const feedUrl = this.data.blogFeedUrl;
+            if (!feedUrl) return;
+            const CACHE_KEY = `blog_feed_${feedUrl}`;
+            const CACHE_TTL = 10 * 60 * 1000; // 10분
+            try {
+                const cached = sessionStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const { data, timestamp } = JSON.parse(cached);
+                    if (Date.now() - timestamp < CACHE_TTL) { this.blogPosts = data; return; }
+                }
+            } catch (e) { /* sessionStorage 접근 불가 시 무시 */ }
+            try {
+                const res = await fetch(feedUrl);
+                if (!res.ok) throw new Error(`Blog feed ${res.status}`);
+                const posts = this.parseFeed(await res.text());
+                this.blogPosts = posts;
+                // 빈 결과는 캐시하지 않음
+                if (posts.length > 0) {
+                    try {
+                        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: posts, timestamp: Date.now() }));
+                    } catch (e) { /* 저장 실패 시 무시 */ }
+                }
+            } catch (e) {
+                console.error('Blog feed fetch failed:', e);
+                this.blogPosts = []; // 실패 시 섹션 숨김
+            }
+        },
+        // END: Blog Posts
         projectLinkLabel(link) {
             const labels = { github: 'GitHub', demo: 'Demo', blog: 'Blog', video: 'Video' };
             return link.label || labels[link.type] || 'Link';
@@ -112,6 +187,7 @@ document.addEventListener('alpine:init', () => {
                     this.updateMeta();
                     this.initProjects(); // START/END: Projects 초기 표시
                     this.loadProjectRepos(); // START/END: GitHub repo 정보 병합
+                    this.loadBlogPosts(); // START/END: 블로그 최신 글
                     this.initTime(); // Load time after data is ready
                     this.fetchRecentCommits(); // START/END: GitHub Commits Fetch
                 } else {

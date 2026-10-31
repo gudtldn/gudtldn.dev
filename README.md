@@ -92,10 +92,20 @@ python3 -m http.server 8000
 |---|---|
 | `name`, `domain`, `bio`, `status`, `location` | 상단 소개. `bio`는 HTML 허용 |
 | `socials`, `blogUrl`, `customLinks` | 링크 모음 |
+| `blogFeedUrl` | 블로그 Atom/RSS 피드 주소. 지정하면 "Latest Posts" 섹션에 최신 글 5개 표시 (아래 참고) |
 | `currentlyFocusing` | 요즘 공부하는 것 |
 | `techStack` | `logo`는 [skillicons.dev](https://skillicons.dev) 아이콘 ID |
 | `infrastructure` | 사용 중인 인프라 카드 |
 | `github` | 사용자명과 통계 카드 색상 |
+
+### 블로그 최신 글
+
+`blogFeedUrl`을 지정하면 방문자 브라우저가 피드를 직접 가져와 최신 글 5개(제목, 날짜, 한 줄 요약)를 표시합니다.
+
+- Atom(Jekyll `jekyll-feed` 기본)과 RSS를 모두 지원합니다. 요약은 피드에 `<summary>`/`<description>`이 있을 때만 표시합니다.
+- 블로그 서버가 **CORS를 허용해야** 동작합니다. GitHub Pages는 기본으로 허용합니다. 허용하지 않는 곳이면 섹션이 숨겨집니다 (Pages Function 등으로 중계 필요).
+- 가져오기에 실패하거나 피드가 비어 있으면 섹션 전체가 숨겨지고, 결과는 10분간 `sessionStorage`에 캐시됩니다.
+- `http(s)` 링크만 표시하며, 제목/요약은 텍스트로만 출력합니다 (HTML 실행 없음).
 
 ## ⚠️ 함께 고쳐야 하는 곳
 
