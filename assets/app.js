@@ -24,6 +24,7 @@ document.addEventListener('alpine:init', () => {
             customLinks: [],
             currentlyFocusing: [],
             projects: [],
+            timeline: [],
             techStack: { languages: [], tools: [] },
             infrastructure: [],
             github: { username: "", themeColor: "3b82f6" }

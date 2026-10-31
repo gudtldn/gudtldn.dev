@@ -92,6 +92,20 @@
         ]
       }
     },
+    "timeline": {
+      "type": "array",
+      "description": "이력/활동 타임라인. 비어 있으면 섹션이 표시되지 않음. 적힌 순서대로 표시",
+      "items": {
+        "type": "object",
+        "required": ["period", "title"],
+        "properties": {
+          "period": { "type": "string", "description": "기간 (자유 형식, 예: \"2024.03 ~ 현재\")" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "url": { "type": "string", "description": "지정하면 제목이 링크가 됨" }
+        }
+      }
+    },
     "infrastructure": {
       "type": "array",
       "items": {

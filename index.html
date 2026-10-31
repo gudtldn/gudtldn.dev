@@ -18,7 +18,7 @@
     <meta property="og:url" content="https://gudtldn.dev">
     <meta property="og:site_name" content="gudtldn.dev">
     <meta property="og:locale" content="ko_KR">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
     <link rel="stylesheet" href="/assets/style.css">
     <link rel="stylesheet" href="/assets/tailwind.css">
 
@@ -262,6 +262,34 @@
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M7 7h10v10"></path></svg>
                     </a>
                 </template>
+            </section>
+
+            <!-- Timeline: profile.json의 timeline이 비어 있으면 숨김 -->
+            <section x-show="data.timeline && data.timeline.length > 0">
+                <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
+                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+                    Timeline
+                </h2>
+                <ol class="relative ml-[3px] border-l border-slate-800 space-y-6">
+                    <template x-for="(item, i) in (data.timeline || [])" :key="i">
+                        <li class="relative pl-6">
+                            <span class="absolute -left-[4.5px] top-[5px] w-2 h-2 rounded-full bg-slate-600 ring-4 ring-[#0d1117]" aria-hidden="true"></span>
+                            <p class="font-mono text-[11px] text-slate-500" x-text="item.period"></p>
+                            <template x-if="item.url">
+                                <a :href="item.url" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 mt-1 text-sm font-medium text-slate-200 hover:text-blue-500 transition-colors">
+                                    <span x-text="item.title"></span>
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M7 7h10v10"></path></svg>
+                                </a>
+                            </template>
+                            <template x-if="!item.url">
+                                <p class="mt-1 text-sm font-medium text-slate-200" x-text="item.title"></p>
+                            </template>
+                            <template x-if="item.description">
+                                <p class="mt-1 text-xs text-slate-400 leading-relaxed" x-text="item.description"></p>
+                            </template>
+                        </li>
+                    </template>
+                </ol>
             </section>
 
             <!-- Discovery & Links -->

@@ -106,6 +106,7 @@ npm run dev
 | `socials`, `blogUrl`, `customLinks` | 링크 모음 |
 | `blogFeedUrl` | 블로그 Atom/RSS 피드 주소. 지정하면 "Latest Posts" 섹션에 최신 글 5개 표시 (아래 참고) |
 | `currentlyFocusing` | 요즘 공부하는 것 |
+| `timeline` | 이력/활동 타임라인. 비어 있으면 섹션이 숨겨짐 (아래 참고) |
 | `techStack` | `logo`는 [skillicons.dev](https://skillicons.dev) 아이콘 ID |
 | `infrastructure` | 사용 중인 인프라 카드 |
 | `github` | 사용자명과 통계 카드 색상 |
@@ -118,6 +119,25 @@ npm run dev
 - 블로그 서버가 **CORS를 허용해야** 동작합니다. GitHub Pages는 기본으로 허용합니다. 허용하지 않는 곳이면 섹션이 숨겨집니다 (Pages Function 등으로 중계 필요).
 - 가져오기에 실패하거나 피드가 비어 있으면 섹션 전체가 숨겨지고, 결과는 10분간 `sessionStorage`에 캐시됩니다.
 - `http(s)` 링크만 표시하며, 제목/요약은 텍스트로만 출력합니다 (HTML 실행 없음).
+
+### 타임라인
+
+학력, 수상, 대회, 활동 등을 연도순으로 정리하는 섹션입니다. `timeline`이 빈 배열이면 화면에 나타나지 않으며, 항목을 넣으면 Latest Posts 아래에 표시됩니다.
+**적힌 순서 그대로** 표시하므로 최신 항목을 위에 두세요.
+
+```json
+"timeline": [
+  { "period": "2026.06 ~ 2027.12", "title": "육군 복무" },
+  { "period": "2025", "title": "○○ 대회 수상", "description": "한 줄 설명 (선택)", "url": "https://... (선택)" }
+]
+```
+
+| 필드 | 필수 | 설명 |
+|---|---|---|
+| `period` | ✅ | 기간. 자유 형식 (`2024`, `2024.03 ~ 현재` 등) |
+| `title` | ✅ | 제목 |
+| `description` | | 한 줄 설명 |
+| `url` | | 지정하면 제목이 링크가 됨 |
 
 ## GitHub API 중계 (Pages Function)
 
