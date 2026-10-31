@@ -1,0 +1,13 @@
+{
+  "name": "gudtldn.dev",
+  "private": true,
+  "description": "gudtldn.dev 개인 사이트",
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/dev.mjs"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}
