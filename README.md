@@ -119,7 +119,8 @@ python3 -m http.server 8000
 - **토큰(선택)**: Cloudflare Pages → Settings → Variables and Secrets에 `GITHUB_TOKEN`을 **Secret**으로 추가하면 시간당 5,000회로 늘어납니다.
   공개 데이터만 읽으므로 권한 없는 fine-grained 토큰이면 충분합니다. 없어도 동작합니다.
 - 로컬(`python3 -m http.server`)에는 Function이 없으므로 `api.github.com`을 직접 호출합니다. Function까지 확인하려면 `npx wrangler pages dev .`를 사용하세요.
-- Cache API는 `*.pages.dev` 주소에서는 저장되지 않을 수 있어, 캐시 효과는 커스텀 도메인(gudtldn.dev)에서 확인됩니다. 응답 헤더 `X-Cache`(HIT/MISS/REVALIDATED/STALE)로 볼 수 있습니다.
+- 응답 헤더 `X-Cache`(HIT/MISS/REVALIDATED/STALE)로 캐시 상태를, `x-ratelimit-limit`(토큰이 적용되면 5000, 아니면 60)로 인증 여부를 확인할 수 있습니다.
+- Cloudflare 변수는 **변경 후 새로 배포된 빌드부터** 적용됩니다.
 
 ## ⚠️ 함께 고쳐야 하는 곳
 
