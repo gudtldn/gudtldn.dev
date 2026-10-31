@@ -180,7 +180,7 @@
                     Projects
                 </h2>
                 <div class="grid grid-cols-1 gap-4" :class="isSingleProject ? 'md:grid-cols-1' : 'md:grid-cols-2'">
-                    <template x-for="project in sortedProjects" :key="project.title">
+                    <template x-for="project in sortedProjects" :key="project.key">
                         <article class="glass rounded-2xl overflow-hidden flex flex-col" :class="isSingleProject ? 'md:flex-row' : ''">
                             <!-- 썸네일: 이미지가 없으면 그라데이션 대체. 위에 페이드/틴트/테두리 오버레이를 겹침 -->
                             <div class="relative w-full aspect-video shrink-0 overflow-hidden bg-slate-900"
@@ -202,10 +202,14 @@
                                 <div class="flex items-start justify-between gap-3">
                                     <h3 class="font-semibold text-base text-white" :class="isSingleProject ? 'md:text-xl' : ''" x-text="project.title"></h3>
                                     <template x-if="project.status">
-                                        <span class="shrink-0 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-md bg-emerald-900/30 text-emerald-300" x-text="project.status"></span>
+                                        <span class="shrink-0 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-md"
+                                              :class="project.statusActive ? 'bg-emerald-900/30 text-emerald-300' : 'bg-white/5 text-slate-400'"
+                                              x-text="project.status"></span>
                                     </template>
                                 </div>
-                                <p class="text-sm text-slate-300" x-text="project.summary"></p>
+                                <template x-if="project.summary">
+                                    <p class="text-sm text-slate-300" x-text="project.summary"></p>
+                                </template>
                                 <template x-if="project.description">
                                     <p class="text-xs text-slate-400 leading-relaxed" x-text="project.description"></p>
                                 </template>

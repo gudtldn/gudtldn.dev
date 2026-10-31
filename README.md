@@ -36,7 +36,26 @@ python3 -m http.server 8000
 
 ### 프로젝트 추가
 
-`projects` 배열에 항목을 추가합니다. 필수는 `title`, `summary`뿐이고 나머지는 선택입니다.
+`projects` 배열에 항목을 추가합니다. **GitHub 저장소가 있으면 `repo` 한 줄이면 됩니다.**
+
+```json
+{ "repo": "gudtldn/SimpleEngine", "image": "projects/simpleengine.webp", "featured": true }
+```
+
+`repo`를 지정하면 아래 값을 GitHub에서 자동으로 가져옵니다. **`profile.json`에 적은 값이 항상 우선**하므로, 바꾸고 싶은 항목만 덮어쓰면 됩니다.
+
+| 항목 | 기본값 (GitHub에서) | 덮어쓰기 |
+|---|---|---|
+| `title` | 저장소 이름 | `"title": "..."` |
+| `summary` | 저장소 description | `"summary": "..."` |
+| `tags` | 저장소 topics (소문자·하이픈 형식) | `"tags": ["C++23", ...]` |
+| `status` | 마지막 push 시점 ("3일 전 업데이트", 30일 지나면 흐리게) | `"status": "실험"` |
+| `links` | 저장소 링크 | `"links": [...]` |
+
+> **문구는 GitHub 저장소의 description/README에서 관리하는 것을 권장합니다.** 사이트와 저장소에 같은 설명을 두 번 적지 않아도 됩니다.
+> 썸네일(`image`)은 GitHub에서 가져올 수 없으므로 직접 지정합니다.
+
+저장소가 없는 항목(실험, 외부 프로젝트 등)은 `title`과 `summary`를 직접 적습니다. 나머지 선택 필드:
 
 ```json
 {
@@ -48,7 +67,6 @@ python3 -m http.server 8000
   "status": "진행 중",
   "featured": true,
   "links": [
-    { "type": "github", "url": "https://github.com/..." },
     { "type": "demo", "url": "https://..." },
     { "type": "other", "label": "발표 자료", "url": "https://..." }
   ]
@@ -59,9 +77,13 @@ python3 -m http.server 8000
 - `image`가 없으면 그라데이션 블록이 대신 표시됩니다. 이미지는 `projects/` 폴더에 두고 경로로 지정하거나, 외부 CDN(R2 등)의 절대 URL을 그대로 넣어도 됩니다.
   - 썸네일은 **가로 1280px 안팎의 WebP/PNG** 권장 (원본 스크린샷은 용량이 크니 줄여서 올리세요). 16:9로 잘려 표시됩니다.
   - 이미지 위에는 하단 페이드, 옅은 파란 틴트, 얇은 테두리가 자동으로 겹쳐집니다.
-- 프로젝트가 **1개**일 때는 카드가 가로로 꽉 찬 가로형(이미지 왼쪽, 텍스트 오른쪽)으로, **2개 이상**이면 2열 그리드로 표시됩니다.
 - `links[].type`은 `github` / `demo` / `blog` / `video` / `other`. `label`을 생략하면 type에 맞는 기본 라벨이 붙습니다.
+- 프로젝트가 **1개**일 때는 카드가 가로로 꽉 찬 가로형(이미지 왼쪽, 텍스트 오른쪽)으로, **2개 이상**이면 2열 그리드로 표시됩니다.
 - `projects`가 비어 있거나 없으면 섹션 전체가 숨겨집니다.
+
+**동작 참고**
+- GitHub API(`/repos/{owner}/{name}`)를 방문자 브라우저에서 호출하며, 결과는 10분간 `sessionStorage`에 캐시합니다. 비로그인 호출은 IP당 시간당 60회 제한이 있어서(커밋 피드와 공유), 실패하면 `profile.json`에 적힌 값만으로 표시됩니다.
+- 로딩 중에는 `profile.json` 값이 먼저 보이고, GitHub 응답이 오면 갱신됩니다.
 
 ### 그 외 섹션
 

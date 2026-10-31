@@ -30,15 +30,76 @@ document.addEventListener('alpine:init', () => {
         commitsError: false,
         commitsVisible: [false, false, false],
         // END: GitHub Commits State
+        // START: Projects State
+        projectsView: [], // 화면에 표시할 프로젝트 (profile.json 값 + GitHub 값을 병합한 결과)
+        // END: Projects State
         // featured 프로젝트를 앞으로 (나머지는 원래 순서 유지)
         get sortedProjects() {
-            const list = this.data.projects || [];
-            return [...list.filter(p => p.featured), ...list.filter(p => !p.featured)];
+            return [...this.projectsView.filter(p => p.featured), ...this.projectsView.filter(p => !p.featured)];
         },
         // 프로젝트가 1개면 카드를 가로로 꽉 채워 표시
         get isSingleProject() {
-            return (this.data.projects || []).length === 1;
+            return this.projectsView.length === 1;
         },
+        // START: Projects Methods (GitHub repo 연동)
+        // 우선순위: profile.json 값 > GitHub 값. gh가 없으면(로딩 전/실패) profile.json 값과 기본값만 사용
+        mergeProject(p, gh) {
+            const repoName = p.repo ? p.repo.split('/')[1] : '';
+            let status = p.status;
+            let statusActive = true;
+            if (!status && gh && gh.pushed_at) {
+                status = `${this.relativeTime(gh.pushed_at)} 업데이트`;
+                statusActive = Date.now() - new Date(gh.pushed_at).getTime() < 30 * 24 * 60 * 60 * 1000;
+            }
+            return {
+                key: p.repo || p.title,
+                title: p.title ?? gh?.name ?? repoName,
+                summary: p.summary ?? gh?.description ?? '',
+                description: p.description,
+                tags: p.tags ?? gh?.topics ?? [],
+                image: p.image,
+                featured: p.featured,
+                links: p.links ?? (p.repo ? [{ type: 'github', url: gh?.html_url || `https://github.com/${p.repo}` }] : []),
+                status,
+                statusActive
+            };
+        },
+        initProjects() {
+            this.projectsView = (this.data.projects || []).map(p => this.mergeProject(p, null));
+        },
+        async loadProjectRepos() {
+            const projects = this.data.projects || [];
+            await Promise.all(projects.map(async (p, i) => {
+                if (!p.repo) return;
+                const gh = await this.fetchRepo(p.repo);
+                if (gh) this.projectsView[i] = this.mergeProject(p, gh);
+            }));
+        },
+        async fetchRepo(repo) {
+            const CACHE_KEY = `gh_repo_${repo}`;
+            const CACHE_TTL = 10 * 60 * 1000; // 10분
+            try {
+                const cached = sessionStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const { data, timestamp } = JSON.parse(cached);
+                    if (Date.now() - timestamp < CACHE_TTL) return data;
+                }
+            } catch (e) { /* sessionStorage 접근 불가 시 무시 */ }
+            try {
+                const res = await fetch(`https://api.github.com/repos/${repo}`);
+                if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+                const j = await res.json();
+                const data = { name: j.name, description: j.description, topics: j.topics, html_url: j.html_url, pushed_at: j.pushed_at };
+                try {
+                    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+                } catch (e) { /* 저장 실패 시 무시 */ }
+                return data;
+            } catch (e) {
+                console.error(`GitHub repo fetch failed (${repo}):`, e);
+                return null; // 실패 시 profile.json 값으로 표시
+            }
+        },
+        // END: Projects Methods
         projectLinkLabel(link) {
             const labels = { github: 'GitHub', demo: 'Demo', blog: 'Blog', video: 'Video' };
             return link.label || labels[link.type] || 'Link';
@@ -49,6 +110,8 @@ document.addEventListener('alpine:init', () => {
                 if (response.ok) {
                     this.data = await response.json();
                     this.updateMeta();
+                    this.initProjects(); // START/END: Projects 초기 표시
+                    this.loadProjectRepos(); // START/END: GitHub repo 정보 병합
                     this.initTime(); // Load time after data is ready
                     this.fetchRecentCommits(); // START/END: GitHub Commits Fetch
                 } else {
