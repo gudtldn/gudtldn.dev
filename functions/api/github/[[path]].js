@@ -26,8 +26,13 @@ const json = (obj, status, extra = {}) =>
     });
 
 // 저장된 응답에서 브라우저로 내보낼 응답을 만든다
-const serve = (stored, route, state) => {
+const serve = (stored, route, state, upstream) => {
     const headers = new Headers(stored.headers);
+    // 한도 확인용 (인증되면 Limit이 5000)
+    for (const h of ['x-ratelimit-limit', 'x-ratelimit-remaining']) {
+        const v = upstream?.headers.get(h);
+        if (v) headers.set(h, v);
+    }
     headers.set('Cache-Control', route.immutable ? 'public, max-age=31536000, immutable' : `public, max-age=${BROWSER_MAX_AGE}`);
     headers.set('X-Cache', state);
     return new Response(stored.body, { status: 200, headers });
@@ -66,7 +71,7 @@ export async function onRequestGet({ request, env, params, waitUntil }) {
         const refreshed = new Response(cached.body, cached);
         refreshed.headers.set('X-Cached-At', String(Date.now()));
         waitUntil(cache.put(cacheKey, refreshed.clone()));
-        return serve(refreshed, route, 'REVALIDATED');
+        return serve(refreshed, route, 'REVALIDATED', upstream);
     }
 
     // 새 데이터
@@ -81,7 +86,7 @@ export async function onRequestGet({ request, env, params, waitUntil }) {
             },
         });
         waitUntil(cache.put(cacheKey, stored.clone()));
-        return serve(stored, route, 'MISS');
+        return serve(stored, route, 'MISS', upstream);
     }
 
     // 실패(한도 초과, 5xx, 네트워크 오류): 만료된 캐시라도 있으면 사용
@@ -89,6 +94,6 @@ export async function onRequestGet({ request, env, params, waitUntil }) {
     return json(
         { message: `GitHub API ${upstream?.status ?? 'unreachable'}` },
         upstream?.status ?? 502,
-        upstream?.headers.get('x-ratelimit-remaining') ? { 'X-RateLimit-Remaining': upstream.headers.get('x-ratelimit-remaining') } : {}
+        Object.fromEntries(['x-ratelimit-limit', 'x-ratelimit-remaining'].flatMap((h) => (upstream?.headers.get(h) ? [[h, upstream.headers.get(h)]] : [])))
     );
 }
