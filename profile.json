@@ -56,7 +56,7 @@
   "projects": [
     {
       "repo": "gudtldn/SimpleEngine",
-      "summary": "런타임(ECS, Job System, 리플렉션/직렬화)부터 렌더링, 에디터까지 엔진 전반을 구현해 가며 배우는 C++ 게임 엔진",
+      "summary": "런타임(ECS, Job System, 리플렉션/직렬화)부터 렌더링, 에디터까지 엔진 전반을 구현해 가며 배우는 C++ 게임엔진 프로젝트",
       "tags": ["C++23", "SDL3GPU", "ECS", "Job System", "Render Graph", "Dear ImGui"],
       "image": "projects/simpleengine.webp",
       "featured": true
