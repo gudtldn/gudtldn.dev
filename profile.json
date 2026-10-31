@@ -56,6 +56,7 @@
     {
       "title": "SimpleEngine",
       "summary": "게임엔진 공부 겸 하고 싶은 대로 만드는 프로젝트",
+      "description": "ECS, 코루틴 기반 Job System, SDL3 GPU 기반 Render Graph를 직접 구현한 C++ 게임 엔진",
       "tags": ["C++23", "SDL3GPU", "ECS"],
       "image": "projects/simpleengine.webp",
       "status": "진행 중",
