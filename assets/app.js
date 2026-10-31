@@ -35,6 +35,10 @@ document.addEventListener('alpine:init', () => {
             const list = this.data.projects || [];
             return [...list.filter(p => p.featured), ...list.filter(p => !p.featured)];
         },
+        // 프로젝트가 1개면 카드를 가로로 꽉 채워 표시
+        get isSingleProject() {
+            return (this.data.projects || []).length === 1;
+        },
         projectLinkLabel(link) {
             const labels = { github: 'GitHub', demo: 'Demo', blog: 'Blog', video: 'Video' };
             return link.label || labels[link.type] || 'Link';

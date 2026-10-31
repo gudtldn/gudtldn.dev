@@ -179,18 +179,28 @@
                     <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                     Projects
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4" :class="isSingleProject ? 'md:grid-cols-1' : 'md:grid-cols-2'">
                     <template x-for="project in sortedProjects" :key="project.title">
-                        <article class="glass rounded-2xl overflow-hidden flex flex-col">
-                            <template x-if="project.image">
-                                <img :src="project.image" :alt="project.title" loading="lazy" class="w-full aspect-video object-cover">
-                            </template>
-                            <template x-if="!project.image">
-                                <div class="w-full aspect-video bg-gradient-to-br from-blue-500/20 via-slate-800/40 to-slate-900/60" aria-hidden="true"></div>
-                            </template>
-                            <div class="p-5 flex flex-col flex-1 gap-3">
+                        <article class="glass rounded-2xl overflow-hidden flex flex-col" :class="isSingleProject ? 'md:flex-row' : ''">
+                            <!-- 썸네일: 이미지가 없으면 그라데이션 대체. 위에 페이드/틴트/테두리 오버레이를 겹침 -->
+                            <div class="relative w-full aspect-video shrink-0 overflow-hidden bg-slate-900"
+                                 :class="isSingleProject ? 'md:w-[55%] md:aspect-auto md:min-h-[18rem]' : ''">
+                                <template x-if="project.image">
+                                    <img :src="project.image" :alt="project.title" loading="lazy" class="absolute inset-0 w-full h-full object-cover">
+                                </template>
+                                <template x-if="!project.image">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-slate-800/40 to-slate-900/60" aria-hidden="true"></div>
+                                </template>
+                                <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent"></div>
+                                    <div class="absolute inset-0 bg-gradient-to-t from-[#14181e] via-[#14181e]/30 to-transparent"
+                                         :class="isSingleProject ? 'md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-[#14181e]' : ''"></div>
+                                    <div class="absolute inset-0 ring-1 ring-inset ring-white/5"></div>
+                                </div>
+                            </div>
+                            <div class="p-5 flex flex-col flex-1 gap-3" :class="isSingleProject ? 'md:p-8 md:justify-center' : ''">
                                 <div class="flex items-start justify-between gap-3">
-                                    <h3 class="font-semibold text-base text-white" x-text="project.title"></h3>
+                                    <h3 class="font-semibold text-base text-white" :class="isSingleProject ? 'md:text-xl' : ''" x-text="project.title"></h3>
                                     <template x-if="project.status">
                                         <span class="shrink-0 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-md bg-emerald-900/30 text-emerald-300" x-text="project.status"></span>
                                     </template>
