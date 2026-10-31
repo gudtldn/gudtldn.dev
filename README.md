@@ -1,7 +1,7 @@
 # gudtldn.dev
 
 개인 소개 페이지 겸 포트폴리오 ([gudtldn.dev](https://gudtldn.dev)).
-빌드 과정 없는 정적 사이트이며, 화면 내용은 전부 `profile.json` 한 파일에서 읽어옵니다.
+정적 사이트이며(Tailwind CSS만 빌드), 화면 내용은 전부 `profile.json` 한 파일에서 읽어옵니다.
 
 ## 구조
 
@@ -14,21 +14,33 @@
 ├─ profile.json        # 사이트에 표시되는 모든 데이터
 ├─ profile-schema.json # profile.json의 JSON Schema (에디터 자동완성/검증용)
 ├─ favicons/           # 파비콘, 웹 매니페스트
-└─ projects/           # (선택) 프로젝트 썸네일 이미지
+├─ projects/           # (선택) 프로젝트 썸네일 이미지
+├─ functions/          # Cloudflare Pages Functions (GitHub API 중계)
+├─ src/tailwind.css    # Tailwind 입력 파일
+├─ tailwind.config.js  # Tailwind 설정 (content, safelist)
+├─ scripts/            # build.mjs(배포용 빌드), dev.mjs(로컬 개발 서버)
+└─ dist/               # 빌드 결과 (git에 올리지 않음, 이 폴더가 배포됨)
 ```
 
-- 스타일링은 Tailwind CSS **Play CDN**, 반응형 동작은 Alpine.js(CDN)를 사용합니다.
+- 스타일링은 Tailwind CSS v3(빌드), 반응형 동작은 Alpine.js(CDN)를 사용합니다.
 - 아이콘/통계는 외부 서비스를 씁니다: skillicons.dev, github-readme-stats, ghchart, GitHub API.
   이 서비스들이 내려가면 해당 이미지/카드가 비어 보일 수 있습니다.
 
 ## 로컬에서 확인
 
-`profile.json`을 `fetch`로 읽기 때문에 `file://`로 열면 동작하지 않습니다. 간단한 서버로 띄우세요.
+Node.js 22 이상이 필요합니다. `profile.json`을 `fetch`로 읽기 때문에 `file://`로 열면 동작하지 않습니다.
 
 ```sh
-python3 -m http.server 8000
-# http://localhost:8000
+npm install
+npm run dev
+# http://localhost:8000  (PORT=3000 npm run dev 로 포트 변경)
 ```
+
+파일을 저장하면 자동으로 다시 빌드됩니다. 배포와 같은 결과물만 만들려면 `npm run build`(결과: `dist/`).
+
+- HTML이나 `app.js`에서 **새로운 Tailwind 클래스를 쓰면 빌드 때 자동으로 포함**됩니다.
+  다만 `bg-${변수}-500`처럼 **클래스 이름을 JS로 조립하면 감지되지 않으므로** `tailwind.config.js`의 `safelist`에 추가해야 합니다. (인프라 카드의 `theme` 색은 스키마의 값으로 이미 처리되어 있습니다.)
+- 로컬에는 Pages Function이 없어서 GitHub API를 직접 호출합니다. Function까지 확인하려면 `npm run build` 후 `npx wrangler pages dev dist`를 사용하세요.
 
 ## 내용 수정
 
@@ -118,7 +130,7 @@ python3 -m http.server 8000
 - GitHub이 실패하면 만료된 캐시라도 있으면 그것을 돌려줍니다.
 - **토큰(선택)**: Cloudflare Pages → Settings → Variables and Secrets에 `GITHUB_TOKEN`을 **Secret**으로 추가하면 시간당 5,000회로 늘어납니다.
   공개 데이터만 읽으므로 권한 없는 fine-grained 토큰이면 충분합니다. 없어도 동작합니다.
-- 로컬(`python3 -m http.server`)에는 Function이 없으므로 `api.github.com`을 직접 호출합니다. Function까지 확인하려면 `npx wrangler pages dev .`를 사용하세요.
+- 로컬(`npm run dev`)에는 Function이 없으므로 `api.github.com`을 직접 호출합니다. Function까지 확인하려면 `npm run build` 후 `npx wrangler pages dev dist`를 사용하세요.
 - 응답 헤더 `X-Cache`(HIT/MISS/REVALIDATED/STALE)로 캐시 상태를, `x-ratelimit-limit`(토큰이 적용되면 5000, 아니면 60)로 인증 여부를 확인할 수 있습니다.
 - Cloudflare 변수는 **변경 후 새로 배포된 빌드부터** 적용됩니다.
 
@@ -133,5 +145,10 @@ python3 -m http.server 8000
 
 ## 배포
 
-Cloudflare Pages로 배포합니다. 빌드가 필요 없는 구조라 저장소 루트의 파일이 그대로 서비스됩니다.
-(빌드 명령/출력 디렉터리 등 실제 설정은 Cloudflare 대시보드에서 확인하세요.)
+Cloudflare Pages로 배포합니다. 대시보드 Settings → Build의 값은 다음과 같아야 합니다.
+
+- 빌드 명령: `npm ci && npm run build`
+- 빌드 출력 디렉터리: `dist`
+- Node 버전: 저장소의 `.node-version`(22)을 따릅니다.
+
+`functions/`는 저장소 루트에 있어야 Pages가 인식합니다 (출력 디렉터리 안으로 옮기지 마세요).
