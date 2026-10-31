@@ -35,10 +35,13 @@ const serve = (stored, route, state, upstream) => {
     }
     headers.set('Cache-Control', route.immutable ? 'public, max-age=31536000, immutable' : `public, max-age=${BROWSER_MAX_AGE}`);
     headers.set('X-Cache', state);
+    headers.set('X-Debug-Env', DEBUG_ENV_KEYS); // TEMP
     return new Response(stored.body, { status: 200, headers });
 };
 
+let DEBUG_ENV_KEYS = ''; // TEMP
 export async function onRequestGet({ request, env, params, waitUntil }) {
+    DEBUG_ENV_KEYS = Object.keys(env).join(',') + '|token=' + (env.GITHUB_TOKEN ? 'len' + String(env.GITHUB_TOKEN).length : 'none'); // TEMP
     const path = [].concat(params.path || []).join('/');
     const route = ROUTES.find((r) => r.re.test(path));
     if (!route) return json({ message: 'Not allowed' }, 404);
