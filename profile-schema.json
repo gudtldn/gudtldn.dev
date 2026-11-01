@@ -69,6 +69,8 @@
           "title": { "type": "string", "description": "생략 시 저장소 이름" },
           "summary": { "type": "string", "description": "한 줄 요약. 생략 시 저장소 description" },
           "description": { "type": "string", "description": "2~3줄 상세 설명" },
+          "period": { "type": "string", "description": "진행 기간 (자유 형식, 예: \"2025.03 ~ 현재\")" },
+          "highlights": { "type": "array", "items": { "type": "string" }, "description": "내가 구현한 것/한 일 (한 줄씩, 3~4개 권장)" },
           "tags": { "type": "array", "items": { "type": "string" }, "description": "생략 시 저장소 topics" },
           "image": { "type": "string", "description": "썸네일 경로 (예: projects/foo.png). 없으면 그라데이션 대체" },
           "status": { "type": "string", "description": "예: 진행 중, 완료. repo 지정 시 생략하면 마지막 push 기준으로 자동 표시" },
