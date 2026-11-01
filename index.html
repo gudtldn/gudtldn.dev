@@ -159,7 +159,6 @@
             <!-- Currently Focusing -->
             <section x-show="data.currentlyFocusing && data.currentlyFocusing.length > 0">
                 <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                     Currently Focusing
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -175,7 +174,6 @@
             <!-- Projects -->
             <section x-show="data.projects && data.projects.length > 0">
                 <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                     Projects
                 </h2>
                 <div class="grid grid-cols-1 gap-4" :class="isSingleProject ? 'md:grid-cols-1' : 'md:grid-cols-2'">
@@ -238,7 +236,6 @@
             <!-- Latest Posts -->
             <section x-show="blogPosts.length > 0">
                 <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                     Latest Posts
                 </h2>
                 <div class="flex flex-col gap-3">
@@ -267,7 +264,6 @@
             <!-- Timeline: profile.json의 timeline이 비어 있으면 숨김 -->
             <section x-show="data.timeline && data.timeline.length > 0">
                 <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                     Timeline
                 </h2>
                 <ol class="relative ml-[3px] border-l border-slate-800 space-y-6">
@@ -296,7 +292,6 @@
             <template x-if="data.customLinks && data.customLinks.length > 0">
                 <section>
                     <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
-                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                         Discovery & Links
                     </h2>
                     <div class="grid grid-cols-1 gap-3">
@@ -318,7 +313,6 @@
             <!-- Tech Stack -->
             <section x-show="data.techStack && (data.techStack.languages.length > 0 || data.techStack.tools.length > 0)">
                 <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                     Tech Stack
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -356,7 +350,6 @@
             <!-- Infrastructure -->
             <section x-show="data.infrastructure && data.infrastructure.length > 0">
                 <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                     Infrastructure
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -381,7 +374,6 @@
             <template x-if="data.github.username">
             <section class="pt-12 border-t border-slate-800">
                 <h2 class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                     Activity & Performance
                 </h2>
                 <div class="flex flex-col gap-10">
