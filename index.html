@@ -197,12 +197,7 @@
                             </div>
                             <div class="p-5 flex flex-col flex-1 gap-3" :class="isSingleProject ? 'md:p-8 md:justify-center' : ''">
                                 <div class="flex items-start justify-between gap-3">
-                                    <div>
-                                        <h3 class="font-semibold text-base text-white" :class="isSingleProject ? 'md:text-xl' : ''" x-text="project.title"></h3>
-                                        <template x-if="project.period">
-                                            <p class="mt-1 font-mono text-[11px] text-slate-500" x-text="project.period"></p>
-                                        </template>
-                                    </div>
+                                    <h3 class="font-semibold text-base text-white" :class="isSingleProject ? 'md:text-xl' : ''" x-text="project.title"></h3>
                                     <template x-if="project.status">
                                         <span class="shrink-0 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-md"
                                               :class="project.statusActive ? 'bg-emerald-900/30 text-emerald-300' : 'bg-white/5 text-slate-400'"
@@ -214,16 +209,6 @@
                                 </template>
                                 <template x-if="project.description">
                                     <p class="text-xs text-slate-400 leading-relaxed" x-text="project.description"></p>
-                                </template>
-                                <template x-if="project.highlights && project.highlights.length > 0">
-                                    <ul class="space-y-1.5">
-                                        <template x-for="(item, i) in project.highlights" :key="i">
-                                            <li class="flex gap-2 text-xs text-slate-300 leading-relaxed">
-                                                <span class="mt-[7px] w-1 h-1 rounded-full bg-slate-600 shrink-0" aria-hidden="true"></span>
-                                                <span x-text="item"></span>
-                                            </li>
-                                        </template>
-                                    </ul>
                                 </template>
                                 <template x-if="project.tags && project.tags.length > 0">
                                     <div class="flex flex-wrap gap-1.5">

@@ -68,8 +68,6 @@ document.addEventListener('alpine:init', () => {
                 title: p.title ?? gh?.name ?? repoName,
                 summary: p.summary ?? gh?.description ?? '',
                 description: p.description,
-                period: p.period,
-                highlights: p.highlights ?? [],
                 tags: p.tags ?? gh?.topics ?? [],
                 image: p.image,
                 featured: p.featured,
